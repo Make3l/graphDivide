@@ -21,8 +21,7 @@ int evaluateNeighbours(Node *nodes[],MarkedNeighbours neighbour,int degree[],int
     {
         if(neighbour_id)
         {
-            if(partitionsTab[neighbour_id->vertex]==curPartId)
-                innerConnections++;
+            innerConnections++;
             neighbour_id=neighbour_id->next;
         }
     }
@@ -30,17 +29,25 @@ int evaluateNeighbours(Node *nodes[],MarkedNeighbours neighbour,int degree[],int
     return w1*innerConnections-w2*outerConnections-w3*degree[neighbour.id];
 }
 
-void dfs(Node *nodes[], int partitionsTab[],int curPartSize,int maxPartSize,int degree[],int start, int curPartId)//degree->connction counter,
+int qsortComparator(const void *a, const void *b) {
+    const MarkedNeighbours *ma=(const MarkedNeighbours*)a;
+    const MarkedNeighbours *mb=(const MarkedNeighbours*)b;
+    return mb->score - ma->score;
+}
+
+
+void dfs(Node *nodes[], int partitionsTab[],int* curPartSize,int maxPartSize,int degree[],int start, int curPartId)//degree->connction counter,
 {
     if(curPartSize>=maxPartSize)
         return;
-
+    partitionsTab[start]=curPartId;
+    (*curPartSize)++;
     Node *node_it=nodes[start];
     int elemCounter=0;
     MarkedNeighbours *neighbours = malloc(degree[start]*sizeof(MarkedNeighbours));
     while(node_it)
     {
-        if(partitionsTab[node_it->vertex]!=-1)//doesnt belong to specyfic partition
+        if(partitionsTab[node_it->vertex]==-1)//doesnt belong to specyfic partition
         {
             neighbours[elemCounter].id=node_it->vertex;
             neighbours[elemCounter].score=evaluateNeighbours(nodes,neighbours[elemCounter],degree,curPartId,partitionsTab);
@@ -48,8 +55,13 @@ void dfs(Node *nodes[], int partitionsTab[],int curPartSize,int maxPartSize,int 
         }
         node_it=node_it->next;
     }
-
-    //ocenic pojsc w kolejne
+    qsort( neighbours, elemCounter, sizeof(MarkedNeighbours),qsortComparator);
+    for(int i=0;i<elemCounter && maxPartSize>curPartSize;i++)
+    {
+        if(partitionsTab[neighbours[i].id]==-1)
+            dfs(nodes,partitionsTab,curPartSize,maxPartSize,degree,neighbours[i].id,curPartId);
+    }
+    free(neighbours);
 }
 
 int  main()
