@@ -21,7 +21,8 @@ int evaluateNeighbours(Node *nodes[],MarkedNeighbours neighbour,int degree[],int
     {
         if(neighbour_id)
         {
-            innerConnections++;
+            if(partitionsTab[neighbour_id->vertex]==curPartId)
+                innerConnections++;
             neighbour_id=neighbour_id->next;
         }
     }
@@ -36,15 +37,15 @@ int qsortComparator(const void *a, const void *b) {
 }
 
 
-void dfs(Node *nodes[], int partitionsTab[],int* curPartSize,int maxPartSize,int degree[],int start, int curPartId)//degree->connction counter,
+void dfs(Node *nodes[], int partitionsTab[],int* curPartSize,int maxPartSize,int degree[],int current, int curPartId)//degree->connction counter,
 {
     if(curPartSize>=maxPartSize)
         return;
-    partitionsTab[start]=curPartId;
+    partitionsTab[current]=curPartId;
     (*curPartSize)++;
-    Node *node_it=nodes[start];
+    Node *node_it=nodes[current];
     int elemCounter=0;
-    MarkedNeighbours *neighbours = malloc(degree[start]*sizeof(MarkedNeighbours));
+    MarkedNeighbours *neighbours = malloc(degree[current]*sizeof(MarkedNeighbours));
     while(node_it)
     {
         if(partitionsTab[node_it->vertex]==-1)//doesnt belong to specyfic partition
@@ -66,7 +67,6 @@ void dfs(Node *nodes[], int partitionsTab[],int* curPartSize,int maxPartSize,int
 
 int  main()
 {
-    //lista sasiedztwa 
-
+    
     return 0;
 }
