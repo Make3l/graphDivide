@@ -2,7 +2,7 @@
 
 typedef struct {
     int vertex;
-    int *next;
+    Node *next;
 }Node;
 
 typedef struct {
@@ -60,13 +60,50 @@ void dfs(Node *nodes[], int partitionsTab[],int* curPartSize,int maxPartSize,int
     for(int i=0;i<elemCounter && maxPartSize>curPartSize;i++)
     {
         if(partitionsTab[neighbours[i].id]==-1)
-            dfs(nodes,partitionsTab,curPartSize,maxPartSize,degree,neighbours[i].id,curPartId);
+            dfs(nodes,partitionsTab,&curPartSize,maxPartSize,degree,neighbours[i].id,curPartId);
     }
     free(neighbours);
 }
 
+Node *mapNeighboursFunction(int *neighboursMatrix[],int n)//convert neighbourMatrix to neighbourList
+{
+    Node **mapNeighbours=malloc(n*sizeof(Node*));
+
+    for(int i=0;i<n;i++)
+    {
+        Node node;
+        Node *node_index=&node;
+        mapNeighbours[i]=NULL;
+        for(int j=0;j<n;j++)
+        {
+            if(neighboursMatrix[i][j]==1)
+            {
+                node_index->next=malloc(sizeof(Node));
+                node_index=node_index->next;
+                node_index->next=NULL;
+                node_index->vertex=j;
+            }
+        }
+        mapNeighbours[i]=node.next;
+    }
+    return mapNeighbours;
+}
+
 int  main()
 {
+    int n=100;//example of nodes number
+    int k=4;//number of partitions
+    //later add precision
+
+    int *partitionTab=malloc(n*sizeof(int));
+    for(int i=0;i<n;i++)
+        partitionTab[i]=-1;
+
+    int curPartSize=0;
+    int maxPartSize=n/k;
+
+
+
     
     return 0;
 }
