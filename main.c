@@ -105,6 +105,37 @@ void freeNeighbours(int n, Node **mapNeighbours)
     free(mapNeighbours);
 }
 
+void countOuterPartitionConnections(int outerConnections[],Node *nodes[], int startNode,int partitionTab[],int visited[])
+{
+    int curPartition=partitionTab[startNode];
+    Node *node_it=nodes[startNode];
+    while(node_it)
+    {
+        if(partitionTab[node_it->vertex]!=curPartition && visited[node_it->vertex]==0)
+            outerConnections[curPartition]++;
+        visited[node_it->vertex]=1;
+        node_it=node_it->next;
+    }
+}
+
+int *createOuterConnection(Node *nodes[],int partitionTab[],int *partitions[],int k,int n)
+{
+    int *outerConnections=calloc(k,sizeof(int));
+    int *visited;
+    int partitionSize=n/k;
+
+    for (int i = 0; i < k; i++)
+    {
+        visited=calloc(n,sizeof(int));
+        for(int j=0;j<partitionSize;j++)
+        {
+            countOuterPartitionConnections(outerConnections,nodes,partitions[i][j],partitionTab,visited);
+        }
+        free(visited);
+    }
+    return outerConnections;
+}
+
 
 
 void printPartitions(int *partitions, int n, int k) {
@@ -134,7 +165,32 @@ int **createTestGraph(int n) {
     return matrix;
 }
 
-void freeMatrix(int **matrix, int n) {
+int **createPartition(int partitionsTab[],int n,int k)
+{
+    int **partition=malloc(k*sizeof(int*));
+    int partitionSize=n/k;
+    for(int i=0;i<k;i++)
+        partition[i]=malloc(partitionSize*sizeof(int));
+
+    int elemCounter=0;
+    for (int i = 0; i < k; i++) 
+    {
+        elemCounter=0;
+        for (int j = 0; j < n && elemCounter<=partitionSize; j++) 
+        {
+            if (partitionsTab[j] == i)
+            {
+                partition[i][elemCounter]=j;
+                elemCounter++;
+            }
+        }
+    }
+
+    return partition;
+}
+
+void freeMatrix(int **matrix, int n) 
+{
     for (int i = 0; i < n; i++)
         free(matrix[i]);
     free(matrix);
@@ -142,8 +198,8 @@ void freeMatrix(int **matrix, int n) {
 
 int  main()
 {
-    int n = 10;  // liczba wierzchołków
-    int k = 3;   // liczba partycji
+    int n = 12;  // liczba wierzchołków
+    int k = 4;   // liczba partycji
     int maxPartSize = n / k;
 
     int **neighbourMatrix = createTestGraph(n);
@@ -168,6 +224,24 @@ int  main()
         int curPartSize = 0;
         dfs(neighbours, partitionTab, &curPartSize, maxPartSize, degree, curStart, i);
     }
+
+    int **partition=createPartition(partitionTab,n,k);
+    for (int i = 0; i < k; i++)
+    {
+        printf("\nPartition %d: ",i);
+        for(int j=0;j<(n/k);j++)
+            printf(" %d, ",partition[i][j]);
+    }
+
+    
+    int *outerCon=createOuterConnection(neighbours,partitionTab,partition,k,n);
+    
+    for(int i=0;i<k;i++)
+    {
+        printf("\nPartition %d <-> %d",i,outerCon[i]);
+    }
+    printf("\n");
+    
 
     printPartitions(partitionTab, n, k);
 
