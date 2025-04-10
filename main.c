@@ -176,7 +176,7 @@ int **createPartition(int partitionsTab[],int n,int k)
     for (int i = 0; i < k; i++) 
     {
         elemCounter=0;
-        for (int j = 0; j < n && elemCounter<=partitionSize; j++) 
+        for (int j = 0; j < n && elemCounter<partitionSize; j++) 
         {
             if (partitionsTab[j] == i)
             {
@@ -249,6 +249,10 @@ int  main()
     freeNeighbours(n, neighbours);
     free(partitionTab);
     free(degree);
+    for (int i = 0; i < k; i++)
+    free(partition[i]);
+    free(partition);
+    free(outerCon);
 
     
     return 0;
