@@ -28,6 +28,10 @@ int *createouterConnectionsnection(Node *neighborList[],int partitionTab[],int *
 int **createPartition(int partitionsTab[],int n,int k);
 int *createVertexDegree(Node **neighbourList,int n);
 int *createPartitionTab(int n);
+
+//basic test n=12 graph with 3 columns and 4 rows, conencted to up,down,right ,left
+int **createBasicTestGraph(int n);
+
 //print
 void printPartitionsTab(int *partitions, int n, int k);
 void printConnections(int **matrix, int n);

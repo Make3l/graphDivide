@@ -12,7 +12,7 @@ int  main()
     int maxPartSize = n / k;
     
 
-    int **neighbourMatrix = createIrregularTestGraph(n);
+    int **neighbourMatrix = createBasicTestGraph(n);
     printConnections(neighbourMatrix, n);
 
  

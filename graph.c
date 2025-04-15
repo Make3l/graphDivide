@@ -172,6 +172,37 @@ int *createPartitionTab(int n)
     return partitionTab;
 }
 
+//basic test n=12 graph with 3 columns and 4 rows, conencted to up,down,right ,left
+int **createBasicTestGraph(int n) 
+{
+    if(n!=12)
+    {
+        fprintf(stderr,"Unfortunatelly this test is only to 12 vecticies graph :c");
+        return NULL;
+    }
+        
+    int **matrix = malloc(n * sizeof(int *));
+    for (int i = 0; i < n; i++) {
+        matrix[i] = calloc(n, sizeof(int));
+    }
+    int columns=3;//hard coded test
+    int rows=4;
+    for(int i=0;i<rows;i++)
+        for(int j=0;j<columns;j++)
+        {
+            if(i-1>=0)
+                matrix[i*columns+j][(i-1)*columns+j]=1;
+            if(i+1<rows)
+                matrix[i*columns+j][(i+1)*columns+j]=1;
+            if(j-1>=0)
+                matrix[i*columns+j][i*columns+j-1]=1;
+            if(j+1<columns)
+                matrix[i*columns+j][i*columns+j+1]=1;
+        }
+    
+    return matrix;
+}
+
 
 //print
 
