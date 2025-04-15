@@ -26,12 +26,15 @@ Node **convertMatrixToList(int *neighboursMatrix[],int n);
 //create
 int *createouterConnectionsnection(Node *neighborList[],int partitionTab[],int *partitions[],int k,int n);
 int **createPartition(int partitionsTab[],int n,int k);
-
+int *createVertexDegree(Node **neighbourList,int n);
+int *createPartitionTab(int n);
 //print
-void printPartitions(int *partitions, int n, int k);
+void printPartitionsTab(int *partitions, int n, int k);
 void printConnections(int **matrix, int n);
+void printPartition(int **partition,int n,int k);
+void printOuterConnections(int *outerConnections,int k);
 
 //free
-void freeAll(int **neighbourMatrix,Node *neigbourList[], int partitionTab[],int vertexDegree[],int *partition[],int outerConnections[],int n,int k);
+void freeAll(int **neighbourMatrix,Node *neighbourList[], int partitionTab[],int vertexDegree[],int *partition[],int outerConnections[],int n,int k);
 
 #endif

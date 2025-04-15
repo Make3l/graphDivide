@@ -5,10 +5,10 @@
 
 //helpers
 
-void countOuterPartitionConnections(int outerConnectionsnections[],Node *neighborList[], int startNode,int partitionTab[])
+void countOuterPartitionConnections(int outerConnectionsnections[],Node *neighbourList[], int startNode,int partitionTab[])
 {
     int curPartition=partitionTab[startNode];
-    Node *node_it=neighborList[startNode];
+    Node *node_it=neighbourList[startNode];
     while(node_it)
     {
         if(partitionTab[node_it->vertex]!=curPartition)
@@ -17,13 +17,13 @@ void countOuterPartitionConnections(int outerConnectionsnections[],Node *neighbo
     }
 }
 
-int evaluateNeighbours(Node *neighborList[],MarkedNeighbours neighbour,int vertexDegree[],int curPartId, int partitionsTab[])
+int evaluateNeighbours(Node *neighbourList[],MarkedNeighbours neighbour,int vertexDegree[],int curPartId, int partitionsTab[])
 {
     int w1=3;
     int w2=5;
     int w3=1;
     int innerConnections=0;
-    Node *neighbour_id=neighborList[neighbour.id];//neighbours of evalueted neighbour
+    Node *neighbour_id=neighbourList[neighbour.id];//neighbours of evalueted neighbour
     while(neighbour_id)
     {
         if(neighbour_id)
@@ -45,13 +45,13 @@ int qsortComparator(const void *a, const void *b) {
 
 //logic
 
-void dfs(Node *neighborList[], int partitionsTab[],int* curPartSize,int maxPartSize,int vertexDegree[],int current, int curPartId)//vertexDegree->connction counter,
+void dfs(Node *neighbourList[], int partitionsTab[],int* curPartSize,int maxPartSize,int vertexDegree[],int current, int curPartId)//vertexDegree->connction counter,
 {
     if(*curPartSize>=maxPartSize)
         return;
     partitionsTab[current]=curPartId;
     (*curPartSize)++;
-    Node *node_it=neighborList[current];
+    Node *node_it=neighbourList[current];
     int elemCounter=0;
     MarkedNeighbours *neighbours = malloc(vertexDegree[current]*sizeof(MarkedNeighbours));
     while(node_it)
@@ -59,7 +59,7 @@ void dfs(Node *neighborList[], int partitionsTab[],int* curPartSize,int maxPartS
         if(partitionsTab[node_it->vertex]==-1)//doesnt belong to specyfic partition
         {
             neighbours[elemCounter].id=node_it->vertex;
-            neighbours[elemCounter].score=evaluateNeighbours(neighborList,neighbours[elemCounter],vertexDegree,curPartId,partitionsTab);
+            neighbours[elemCounter].score=evaluateNeighbours(neighbourList,neighbours[elemCounter],vertexDegree,curPartId,partitionsTab);
             elemCounter++;
         }
         node_it=node_it->next;
@@ -68,7 +68,7 @@ void dfs(Node *neighborList[], int partitionsTab[],int* curPartSize,int maxPartS
     for(int i=0;i<elemCounter && maxPartSize>*curPartSize;i++)
     {
         if(partitionsTab[neighbours[i].id]==-1)
-            dfs(neighborList,partitionsTab,curPartSize,maxPartSize,vertexDegree,neighbours[i].id,curPartId);
+            dfs(neighbourList,partitionsTab,curPartSize,maxPartSize,vertexDegree,neighbours[i].id,curPartId);
     }
     free(neighbours);
 }
@@ -106,7 +106,7 @@ Node **convertMatrixToList(int *neighboursMatrix[],int n)//convert neighbourMatr
 
 //create
 
-int *createouterConnectionsnection(Node *neighborList[],int partitionTab[],int *partitions[],int k,int n)
+int *createouterConnectionsnection(Node *neighbourList[],int partitionTab[],int *partitions[],int k,int n)
 {
     int *outerConnectionsnections=calloc(k,sizeof(int));
     int *visited;
@@ -117,7 +117,7 @@ int *createouterConnectionsnection(Node *neighborList[],int partitionTab[],int *
         visited=calloc(n,sizeof(int));
         for(int j=0;j<partitionSize;j++)
         {
-            countOuterPartitionConnections(outerConnectionsnections,neighborList,partitions[i][j],partitionTab);
+            countOuterPartitionConnections(outerConnectionsnections,neighbourList,partitions[i][j],partitionTab);
         }
         free(visited);
     }
@@ -149,10 +149,33 @@ int **createPartition(int partitionsTab[],int n,int k)
     return partition;
 }
 
+int *createVertexDegree(Node **neighbourList,int n)
+{
+    int *vertexDegree = malloc(n * sizeof(int));
+    for (int i = 0; i < n; i++) {
+        vertexDegree[i] = 0;
+        Node *it = neighbourList[i];
+        while (it) {
+            vertexDegree[i]++;
+            it = it->next;
+        }
+    }
+    return vertexDegree;
+}
+
+
+int *createPartitionTab(int n)
+{
+    int *partitionTab = malloc(n * sizeof(int));
+    for (int i = 0; i < n; i++)
+        partitionTab[i] = -1;
+    return partitionTab;
+}
+
 
 //print
 
-void printPartitions(int *partitions, int n, int k) {
+void printPartitionsTab(int *partitions, int n, int k) {
     printf("== Podział na %d części ==\n", k);
     for (int i = 0; i < k; i++) {
         printf("Partycja %d: ", i);
@@ -175,11 +198,30 @@ void printConnections(int **matrix, int n) {
     }
 }
 
+void printPartition(int **partition,int n,int k)
+{
+    for (int i = 0; i < k; i++)
+    {
+        printf("\nPartition %d: ",i);
+        for(int j=0;j<(n/k);j++)
+            printf(" %d, ",partition[i][j]);
+    }
+}
+
+void printOuterConnections(int *outerConnections,int k)
+{
+    for(int i=0;i<k;i++)
+    {
+        printf("\nPartition %d <-> %d",i,outerConnections[i]);
+    }
+    printf("\n");
+}
+
 
 
 //free
 
-void freeAll(int **neighbourMatrix,Node *neigbourList[], int partitionTab[],int vertexDegree[],int *partition[],int outerConnections[],int n,int k)
+void freeAll(int **neighbourMatrix,Node *neighbourList[], int partitionTab[],int vertexDegree[],int *partition[],int outerConnections[],int n,int k)
 {
     for (int i = 0; i < n; i++)//cleanning neighbourMatrix
         free(neighbourMatrix[i]);
@@ -190,7 +232,7 @@ void freeAll(int **neighbourMatrix,Node *neigbourList[], int partitionTab[],int 
     Node *next;
     for(int i=0;i<n;i++)//cleaning neighbourList
     {
-        cur=neigbourList[i];
+        cur=neighbourList[i];
         while(cur)
         {
             next=cur->next;
@@ -198,7 +240,7 @@ void freeAll(int **neighbourMatrix,Node *neigbourList[], int partitionTab[],int 
             cur=next;
         }
     }
-    free(neigbourList);
+    free(neighbourList);
 
 
     free(partitionTab);//cleanig partition tab(nodes[i]=partition,)
