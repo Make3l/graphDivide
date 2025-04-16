@@ -33,7 +33,7 @@ int  main()
     printPartition(partition,n,k);
 
     
-    int *outerConnections=createouterConnectionsnection(neighbourList,partitionTab,partition,k,n);
+    int *outerConnections=createOuterConnections(neighbourList,partitionTab,partition,k,n);
     printOuterConnections(outerConnections,k);
 
     

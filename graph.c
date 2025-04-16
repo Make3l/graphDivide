@@ -106,7 +106,7 @@ Node **convertMatrixToList(int *neighboursMatrix[],int n)//convert neighbourMatr
 
 //create
 
-int *createouterConnectionsnection(Node *neighbourList[],int partitionTab[],int *partitions[],int k,int n)
+int *createOuterConnections(Node *neighbourList[],int partitionTab[],int *partitions[],int k,int n)
 {
     int *outerConnectionsnections=calloc(k,sizeof(int));
     int *visited;
