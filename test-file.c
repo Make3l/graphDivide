@@ -1,4 +1,13 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include "graph.h"
+
 int **createTestGraph(int n) {
+    if(n!=12)
+    {
+        fprintf(stderr,"Unfortunatelly this test is only to 12 vecticies graph :c");
+        return NULL;
+    }
     int **matrix = malloc(n * sizeof(int *));
     for (int i = 0; i < n; i++) {
         matrix[i] = calloc(n, sizeof(int));
@@ -52,4 +61,46 @@ int** createIrregularTestGraph(int n) {
     }
 
     return matrix;
+}
+
+int main()
+{
+    int n = 12;  // liczba wierzchołków
+    int k = 4;   // liczba partycji
+    int maxPartSize = n / k;
+    
+
+    int **neighbourMatrix = createBasicTestGraph(n);
+    //printConnections(neighbourMatrix, n);
+
+    Node **neighbourList = convertMatrixToList(neighbourMatrix, n);
+
+    int *partitionTab = createPartitionTab(n);
+    int *vertexDegree = createVertexDegree(neighbourList,n);
+
+    int curStart = 0;
+    int curPartSize = 0;
+    for (int i = 0; i < k; i++) {
+        while (partitionTab[curStart] != -1)
+            curStart++;
+        curPartSize = 0;//assiumpion is that we finish each partition in dfs 
+        dfs(neighbourList, partitionTab, &curPartSize, maxPartSize, vertexDegree, curStart, i);
+    }
+
+    int **partition=createPartition(partitionTab,n,k);
+    printPartition(partition,n,k);
+
+    
+    int *outerConnections=createOuterConnections(neighbourList,partitionTab,partition,k,n);
+    printOuterConnections(outerConnections,k);
+
+    
+    printPartitionsTab(partitionTab, n, k);
+
+
+    freeAll(neighbourMatrix,neighbourList,partitionTab,vertexDegree,partition,outerConnections,n,k);
+
+    
+
+    return 0;
 }
