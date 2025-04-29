@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <limits.h>
 
 //helpers
 
@@ -20,7 +21,7 @@ void countOuterPartitionConnections(int outerConnectionsnections[],Node *neighbo
 int evaluateNeighbours(Node *neighbourList[],MarkedNeighbours neighbour,int vertexDegree[],int curPartId, int partitionsTab[])
 {
     int w1=3;
-    int w2=5;
+    int w2=4;
     int w3=1;
     int innerConnections=0;
     Node *neighbour_id=neighbourList[neighbour.id];//neighbours of evalueted neighbour
@@ -34,7 +35,7 @@ int evaluateNeighbours(Node *neighbourList[],MarkedNeighbours neighbour,int vert
         }
     }
     int outerConnectionsnections=vertexDegree[neighbour.id]-innerConnections;
-    return w1*innerConnections-w2*outerConnectionsnections-w3*vertexDegree[neighbour.id];
+    return w1*innerConnections-w2*outerConnectionsnections-w3*vertexDegree[neighbour.id]+100;//added to convert negative values to positive
 }
 
 int qsortComparator(const void *a, const void *b) {
@@ -43,14 +44,56 @@ int qsortComparator(const void *a, const void *b) {
     return mb->score - ma->score;
 }
 
+int evaluateStart( Node *neighbourList[],int evNode,int partitionTab[],int vertexDegree[])//evNode is node that is beeing evaluated
+{
+    MarkedNeighbours curNode;
+    int score=0;
+    Node* it=neighbourList[evNode];
+    while(it)
+    {
+        curNode.id=it->vertex;
+        score+=evaluateNeighbours(neighbourList,curNode,vertexDegree,-1,partitionTab);
+        it=it->next;
+    }
+    return score;
+}
+
+int findBestPartitionStart(int partitionTab[],int n, Node *neighbourList[],int vertexDegree[])
+{
+    MarkedNeighbours curBest;
+    curBest.id=-1;
+    curBest.score=INT_MIN;
+    int curScore=0;
+    for(int i=0;i<n;i++)
+    {
+        if(partitionTab[i]!=-1)//skipped visited
+            continue;
+        curScore=evaluateStart(neighbourList,i,partitionTab,vertexDegree);
+        if(curScore>curBest.score)
+        {
+            curBest.score=curScore;
+            curBest.id=i;
+        }
+    }
+
+    return curBest.id;
+}
+
 //logic
 
-void dfs(Node *neighbourList[], int partitionsTab[],int* curPartSize,int maxPartSize,int vertexDegree[],int current, int curPartId)//vertexDegree->connction counter,
+void dfs(Node *neighbourList[], int partitionsTab[],int* curPartSize,int maxFirstPartSize,int vertexDegree[],int current, int curPartId,int average[],int pMin,int pMax)//vertexDegree->connction counter,
 {
-    if(*curPartSize>=maxPartSize)
+    if (partitionsTab[current] != -1)
         return;
     partitionsTab[current]=curPartId;
     (*curPartSize)++;
+
+    if(curPartId==0 && maxFirstPartSize<=(*curPartSize))
+        return;
+    else if(curPartId!=0 && pMax<(*curPartSize))
+        return;
+
+
     Node *node_it=neighbourList[current];
     int elemCounter=0;
     MarkedNeighbours *neighbours = malloc(vertexDegree[current]*sizeof(MarkedNeighbours));
@@ -65,10 +108,27 @@ void dfs(Node *neighbourList[], int partitionsTab[],int* curPartSize,int maxPart
         node_it=node_it->next;
     }
     qsort( neighbours, elemCounter, sizeof(MarkedNeighbours),qsortComparator);
-    for(int i=0;i<elemCounter && maxPartSize>*curPartSize;i++)
+    for(int i=0;i<elemCounter;i++)
     {
+        if(curPartId!=0)
+        {
+            if(pMax<(*curPartSize) || (neighbours[i].score<average[0] && (*curPartSize)>=pMin))//not worth it
+                break;
+        }
+        else
+        {
+            if(maxFirstPartSize<=(*curPartSize))
+                break;
+        }
+            
         if(partitionsTab[neighbours[i].id]==-1)
-            dfs(neighbourList,partitionsTab,curPartSize,maxPartSize,vertexDegree,neighbours[i].id,curPartId);
+        {
+            average[1]+=neighbours[i].score;//added to current average sum
+            if (curPartId!=0 && *curPartSize >= pMax)
+                return;
+            dfs(neighbourList,partitionsTab,curPartSize,maxFirstPartSize,vertexDegree,neighbours[i].id,curPartId,average,pMin,pMax);
+        }
+            
     }
     free(neighbours);
 }
