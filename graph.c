@@ -78,6 +78,67 @@ int findBestPartitionStart(int partitionTab[],int n, Node *neighbourList[],int v
 
     return curBest.id;
 }
+int findBestNearPartition(Node *neighbourList[],int partitionTab[],int partSize[],int unassignedNode,int k,double p,int n)//searches for best partition that is near that node
+{
+    Node* curNeighbour=neighbourList[unassignedNode];
+    MarkedNeighbours *partScore=calloc(k,sizeof(MarkedNeighbours));
+    for(int i=0;i<k;i++)
+        partScore[i].id=i;
+    while(curNeighbour)
+    {
+        if(partitionTab[curNeighbour->vertex]>=0)
+            partScore[partitionTab[curNeighbour->vertex]].score++;
+        curNeighbour=curNeighbour->next;
+    }
+    qsort(partScore,k,sizeof(MarkedNeighbours),qsortComparator);
+
+    //max possible partition size
+    int minPartitionId=-1;
+    int minPartitionSize=INT_MAX;
+    int maxPartitionSize=INT_MIN;
+    for(int i=0;i<k;i++)
+    {
+        if(partSize[i]<minPartitionSize)
+        {
+            minPartitionSize=partSize[i];
+            minPartitionId=i;
+        }
+        maxPartitionSize=max(maxPartitionSize,partSize[i]);
+    }
+
+    if((double)(maxPartitionSize-minPartitionSize)/(double)n>p)//if one partition is too small (choose it regardless, of other's score)
+        return minPartitionId;
+    
+        
+
+    int maxPossibleSize=(double)minPartitionSize*(1.0+p);
+    for(int i=0;i<k;i++)
+    {
+        if(partScore[i].score<=0)//partitions not near vertex, maby evaluate later(base on size, better choose smaller)
+            break;
+        if(partSize[partScore[i].id]+1<=maxPossibleSize)
+        {
+            return partScore[i].id;
+        }
+    }
+
+    //not near, return the smallest partition
+    return minPartitionId;
+
+}
+
+void assignRemainingNodes(Node *neighbourList[],int partitionTab[],int partSize[],int n,int k,double p)
+{
+    int choosedPartition=0;
+    for(int i=0;i<n;i++)
+    {
+        if(partitionTab[i]!=-1)
+            continue;
+        choosedPartition=findBestNearPartition(neighbourList,partitionTab,partSize,i,k,p,n);
+        partSize[choosedPartition]++;
+        partitionTab[i]=choosedPartition;
+    }
+}
 
 //logic
 
@@ -185,18 +246,17 @@ int *createOuterConnections(Node *neighbourList[],int partitionTab[],int *partit
 }
 
 
-int **createPartition(int partitionsTab[],int n,int k)
+int **createPartition(int partitionsTab[],int n,int k,int partitionSize[])
 {
     int **partition=malloc(k*sizeof(int*));
-    int partitionSize=n/k;
     for(int i=0;i<k;i++)
-        partition[i]=malloc(partitionSize*sizeof(int));
+        partition[i]=malloc(partitionSize[i]*sizeof(int));
 
     int elemCounter=0;
     for (int i = 0; i < k; i++) 
     {
         elemCounter=0;
-        for (int j = 0; j < n && elemCounter<partitionSize; j++) 
+        for (int j = 0; j < n && elemCounter<partitionSize[i]; j++) 
         {
             if (partitionsTab[j] == i)
             {
@@ -289,12 +349,12 @@ void printConnections(int **matrix, int n) {
     }
 }
 
-void printPartition(int **partition,int n,int k)
+void printPartition(int **partition,int k,int partitionSize[])
 {
     for (int i = 0; i < k; i++)
     {
         printf("\nPartition %d: ",i);
-        for(int j=0;j<(n/k);j++)
+        for(int j=0;j<partitionSize[i];j++)
             printf(" %d, ",partition[i][j]);
     }
 }

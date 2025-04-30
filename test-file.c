@@ -140,19 +140,19 @@ int count_cut_edges(Node *neighbourList[], int partitionTab[], int n)
 
 int main()
 {
-    int n = 200;  // liczba wierzchołków
-    int k = 8;   // liczba partycji
+    int n = 12;  // liczba wierzchołków
+    int k = 4;   // liczba partycji
     int firstPartSize = n / k;
-    double precision=0.2f;
+    double precision=0.1f;
     int remainingNodes=n;
     int average[2]={0,0};//0-index general average,1-index current average
-    int boundaryValues[2]={n/k,n/k};//min, max partition sizes
     int pMin=0;//possible min
     int pMax=0;//possible max
+    int* partSize=malloc(sizeof(int) * k);
 
     double connectionProbability = 0.02;
-    int **neighbourMatrix = createLargeTestGraph(n, connectionProbability);
-    printConnections(neighbourMatrix, n);
+    int **neighbourMatrix = createBasicTestGraph(n);
+    //printConnections(neighbourMatrix, n);
 
  
     Node **neighbourList = convertMatrixToList(neighbourMatrix, n);
@@ -175,6 +175,7 @@ int main()
 
         dfs(neighbourList, partitionTab, &curPartSize, firstPartSize, vertexDegree, curStart, i, average,pMin,pMax);
         remainingNodes-=curPartSize;
+        partSize[i]=curPartSize;
         if(average[0]==0)
         {
             average[0]+=(average[1]/(curPartSize));
@@ -184,15 +185,15 @@ int main()
             average[0]+=(average[1]/(curPartSize));
             average[0]/=2;
         }
-        boundaryValues[0]=min(boundaryValues[0],curPartSize);//current min
-        boundaryValues[1]=max(boundaryValues[1],curPartSize);//current max
-
         printf("   Partition %d average is %d\n",i,average[1]/curPartSize);
         printf("After partition %d average is: %d\n\n",i,average[0]);
     }
 
-    int **partition=createPartition(partitionTab,n,k);
-    printPartition(partition,n,k);
+    //assigning remaining nodes
+    assignRemainingNodes(neighbourList,partitionTab,partSize,n,k,precision);
+
+    int **partition=createPartition(partitionTab,n,k,partSize);
+    printPartition(partition,k,partSize);
 
     
     int *outerConnections=createOuterConnections(neighbourList,partitionTab,partition,k,n);
@@ -206,8 +207,6 @@ int main()
 
 
     freeAll(neighbourMatrix,neighbourList,partitionTab,vertexDegree,partition,outerConnections,n,k);
-
-    
 
     return 0;
 }
