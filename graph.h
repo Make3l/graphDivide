@@ -31,6 +31,7 @@ void dfs(Node *neighborList[], int partitionsTab[],int* curPartSize,int maxPartS
 Node **convertMatrixToList(int *neighboursMatrix[],int n);
 
 //create
+void addConnection(Node* neighbourList[], int from, int to);//creates connection
 int *createOuterConnections(Node *neighborList[],int partitionTab[],int *partitions[],int k,int n);
 int **createPartition(int partitionsTab[],int n,int k,int partitionSize[]);
 int *createVertexDegree(Node **neighbourList,int n);
@@ -47,5 +48,6 @@ void printOuterConnections(int *outerConnections,int k);
 
 //free
 void freeAll(int **neighbourMatrix,Node *neighbourList[], int partitionTab[],int vertexDegree[],int *partition[],int outerConnections[],int n,int k);
+void freeAllWithoutMatrix(Node *neighbourList[], int partitionTab[],int vertexDegree[],int *partition[],int outerConnections[],int n,int k);
 
 #endif

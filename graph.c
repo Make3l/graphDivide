@@ -227,6 +227,13 @@ Node **convertMatrixToList(int *neighboursMatrix[],int n)//convert neighbourMatr
 
 //create
 
+void addConnection(Node* neighbourList[], int from, int to) {
+    Node* newNode = malloc(sizeof(Node));
+    newNode->vertex = to;
+    newNode->next = neighbourList[from];
+    neighbourList[from] = newNode;
+}
+
 int *createOuterConnections(Node *neighbourList[],int partitionTab[],int *partitions[],int k,int n)
 {
     int *outerConnectionsnections=calloc(k,sizeof(int));
@@ -379,6 +386,35 @@ void freeAll(int **neighbourMatrix,Node *neighbourList[], int partitionTab[],int
     free(neighbourMatrix);
 
 
+    Node *cur;
+    Node *next;
+    for(int i=0;i<n;i++)//cleaning neighbourList
+    {
+        cur=neighbourList[i];
+        while(cur)
+        {
+            next=cur->next;
+            free(cur);
+            cur=next;
+        }
+    }
+    free(neighbourList);
+
+
+    free(partitionTab);//cleanig partition tab(nodes[i]=partition,)
+
+    free(vertexDegree);//cleanig vertex degree
+
+    for (int i = 0; i < k; i++)//cleaning partition(partition:nodes,...)
+        free(partition[i]);
+    free(partition);
+
+    free(outerConnections);//cleaning outer connections
+
+}
+
+void freeAllWithoutMatrix(Node *neighbourList[], int partitionTab[],int vertexDegree[],int *partition[],int outerConnections[],int n,int k)//without neighbour matrix
+{
     Node *cur;
     Node *next;
     for(int i=0;i<n;i++)//cleaning neighbourList

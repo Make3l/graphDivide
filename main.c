@@ -3,10 +3,8 @@
 #include <math.h>
 #include "graph.h"
 
-
 int  main()
 {
-    
     int n = 12;  // liczba wierzchołków
     int k = 4;   // liczba partycji
     int firstPartSize = n / k;
@@ -74,6 +72,6 @@ int  main()
 
 
     freeAll(neighbourMatrix,neighbourList,partitionTab,vertexDegree,partition,outerConnections,n,k);
-    
+
     return 0;
 }
