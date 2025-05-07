@@ -17,22 +17,21 @@ typedef struct {
 
 //helpers
 void countOuterPartitionConnections(int outerConnectionsnections[],Node *neighborList[], int startNode,int partitionTab[]);
-int evaluateNeighbours(Node *neighborList[],MarkedNeighbours neighbour,int vertexDegree[],int curPartId, int partitionsTab[]);
+int evaluateNeighbours(Node *neighborList[],MarkedNeighbours neighbour,int vertexDegree[],int curPartId, int partitionsTab[],int curPartSize,int pMin);
 int qsortComparator(const void *a, const void *b);
-int evaluateStart( Node *neighbourList[],int evNode,int partitionTab[],int vertexDegree[]);
-int findBestPartitionStart(int partitionTab[],int n, Node *neighbourList[],int vertexDegree[]);
+int evaluateStart( Node *neighbourList[],int evNode,int partitionTab[],int vertexDegree[],int n);
+int findBestPartitionStart(int partitionTab[],int n, Node *neighbourList[]);
 int findBestNearPartition(Node *neighbourList[],int partitionTab[],int partSize[],int unassignedNode,int k,double p,int n);
 void assignRemainingNodes(Node *neighbourList[],int partitionTab[],int partSize[],int n,int k,double p);
 
 //logic
-void dfs(Node *neighborList[], int partitionsTab[],int* curPartSize,int maxPartSize,int vertexDegree[],int current, int curPartId,int average[],int pMin,int pMax);
-
+void dfs(Node *neighborList[], int partitionsTab[],int* curPartSize,int maxPartSize,int vertexDegree[],int current, int curPartId,long long average[],int pMin,int pMax);
+void dfsIterative(Node *neighbourList[], int partitionsTab[],int* curPartSize,int maxFirstPartSize,int vertexDegree[],int current, int curPartId,long long average[],int pMin,int pMax,int n);
 //convert
 Node **convertMatrixToList(int *neighboursMatrix[],int n);
 
 //create
-void addConnection(Node* neighbourList[], int from, int to);//creates connection
-int *createOuterConnections(Node *neighborList[],int partitionTab[],int *partitions[],int k,int n);
+int *createOuterConnections(Node *neighbourList[], int partitionTab[], int *partitions[],int partSize[], int k, int n);
 int **createPartition(int partitionsTab[],int n,int k,int partitionSize[]);
 int *createVertexDegree(Node **neighbourList,int n);
 int *createPartitionTab(int n);
@@ -45,9 +44,9 @@ void printPartitionsTab(int *partitions, int n, int k);
 void printConnections(int **matrix, int n);
 void printPartition(int **partition,int k,int partitionSize[]);
 void printOuterConnections(int *outerConnections,int k);
+void printPartitionsSizes(int partSize[],int k);
 
 //free
 void freeAll(int **neighbourMatrix,Node *neighbourList[], int partitionTab[],int vertexDegree[],int *partition[],int outerConnections[],int n,int k);
-void freeAllWithoutMatrix(Node *neighbourList[], int partitionTab[],int vertexDegree[],int *partition[],int outerConnections[],int n,int k);
 
 #endif
