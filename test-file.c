@@ -4,7 +4,7 @@
 #include "graph.h"
 #include "input.h"
 
-int **createTestGraph(int n) {
+int **createTestGraph(int n) {//creates matrix (4x3) with 12 nodes, 3 columns and 4 rows,connected: up, down, right
     if(n!=12)
     {
         fprintf(stderr,"Unfortunatelly this test is only to 12 vecticies graph :c");
@@ -14,7 +14,7 @@ int **createTestGraph(int n) {
     for (int i = 0; i < n; i++) {
         matrix[i] = calloc(n, sizeof(int));
     }
-    int columns=3;//hard coded test
+    int columns=3;
     int rows=4;
     for(int i=0;i<rows;i++)
         for(int j=0;j<columns;j++)
@@ -33,7 +33,13 @@ int **createTestGraph(int n) {
 }
 
 
-int** createIrregularTestGraph(int n) {
+int** createIrregularTestGraph(int n) {//creates irregular matrix
+    if(n!=12)
+    {
+        fprintf(stderr,"Unfortunatelly this test is only to 12 vecticies graph :c");
+        return NULL;
+    }
+
     int **matrix = malloc(n * sizeof(int*));
     for (int i = 0; i < n; i++) {
         matrix[i] = calloc(n, sizeof(int));
@@ -65,7 +71,7 @@ int** createIrregularTestGraph(int n) {
     return matrix;
 }
 
-int** createLargeTestGraph(int n, double connectionProbability) {
+int** createLargeTestGraph(int n, double connectionProbability) {//creates matrix (n,n), that has some probability that random(or semi random because of choosen seed) edges are connected
     int **matrix = malloc(n * sizeof(int*));
     if (!matrix) {
         perror("malloc matrix");
@@ -80,13 +86,13 @@ int** createLargeTestGraph(int n, double connectionProbability) {
         }
     }
 
-    srand(0); // lub srand(0) dla stałości
+    srand(0);//srand(0) for repeatability
 
     for (int i = 0; i < n; i++) {
         for (int j = i + 1; j < n; j++) {
             if (((double) rand() / RAND_MAX) < connectionProbability) {
                 matrix[i][j] = 1;
-                matrix[j][i] = 1; // nieskierowany
+                matrix[j][i] = 1; // undirected connections
             }
         }
     }
@@ -98,7 +104,7 @@ int  main(int argc, char **argv)
     int n=0;
     Node **neighbourList=NULL;
     int** neighbourMatrix=NULL;
-    if(argc<2)
+    if(argc<2)//options of tests
     {
         printf("Welcome to test file, choose your test:\n1 - Basic test 12 nodes, 3 columns and 4 rows,connected: up, down, right\n2 - Creates irregular graph with 12 nodes\n3 - Hybrid custom-random graph you need to choose number of nodes and connect probability\n");
         int option=-1;
@@ -111,11 +117,19 @@ int  main(int argc, char **argv)
                 printf("You choosed option 1: basic test 12 nodes, 3 columns and 4 rows,connected: up, down, right\n");
                 n=12;
                 neighbourMatrix=createBasicTestGraph(n);
+                if (!neighbourMatrix) {
+                    perror("ERROR: neighbourMatrix==NULL");
+                    exit(EXIT_FAILURE);
+                }
                 break;
             case 2:
                 printf("You choosed option 1: irregular graph with 12 nodes\n");
                 n=12;
                 neighbourMatrix=createIrregularTestGraph(n);
+                if (!neighbourMatrix) {
+                    perror("ERROR: neighbourMatrix==NULL");
+                    exit(EXIT_FAILURE);
+                }
                 break;
             case 3:
                 printf("You choosed option 1: hybrid custom-random graph you need to choose number of nodes and connect probability\n");
@@ -133,6 +147,10 @@ int  main(int argc, char **argv)
                     exit(1);
                 }
                 neighbourMatrix=createLargeTestGraph(n,connectionProbability);
+                if (!neighbourMatrix) {
+                    perror("ERROR: neighbourMatrix==NULL");
+                    exit(EXIT_FAILURE);
+                }
                 break;
 
             default:
@@ -156,18 +174,18 @@ int  main(int argc, char **argv)
         }
     }
 
-    int k = 5;   // liczba partycji
+    int k = 5;   // number of partitions
     int firstPartSize = n / k; 
     double precision=0.5f;
     int remainingNodes=n;
     long long average[2]={0,0};//0-index general average,1-index current average
     int pMin=0;//possible min
     int pMax=0;//possible max
-    int* partSize=malloc(sizeof(int) * k);
+    int* partSize=malloc(sizeof(int) * k);//table of partitions sizes
         
 
-    int *partitionTab = createPartitionTab(n);
-    int *vertexDegree = createVertexDegree(neighbourList,n);
+    int *partitionTab = createPartitionTab(n);//table in which vertex numbers are given a partition number
+    int *vertexDegree = createVertexDegree(neighbourList,n);//how many connectins vertex has
 
     int curStart = 0;
     for (int i = 0; i < k; i++) {
@@ -181,8 +199,8 @@ int  main(int argc, char **argv)
 
         int remainingParts = k - i;
         double avg = (double)remainingNodes / remainingParts;
-        pMin = (int)(avg * (1.0 - precision));
-        pMax = (int)(avg * (1.0 + precision));
+        pMin = (int)(avg * (1.0 - precision));//calculats possible min, for next partition
+        pMax = (int)(avg * (1.0 + precision));//calculats possible max, for next partition
         if (pMin < 1) pMin = 1;
         if (pMax > remainingNodes) pMax = remainingNodes;
 
@@ -199,10 +217,9 @@ int  main(int argc, char **argv)
             average[0]/=2;
         }
 
-        printf("DFS zakończony: partycja %d, rozmiar = %d, suma = %lld\n", i, curPartSize, average[1]);
-        //printf("Average[1]=%lld\n",average[1]);
+        printf("DFS ended: partition %d, size = %d, sum = %lld\n", i, curPartSize, average[1]);
         if (curPartSize > 0)
-            printf("Średnia: %lld\n", average[1] / curPartSize);
+            printf("Average: %lld\n", average[1] / curPartSize);
     }
 
     //assigning remaining nodes

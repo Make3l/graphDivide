@@ -10,7 +10,7 @@
 
 // helpers
 
-void countOuterPartitionConnections(int outerConnectionsnections[], Node *neighbourList[], int startNode, int partitionTab[])
+void countOuterPartitionConnections(int outerConnectionsnections[], Node *neighbourList[], int startNode, int partitionTab[])//ERROR?
 {
     int curPartition = partitionTab[startNode];
     Node *node_it = neighbourList[startNode];
@@ -22,28 +22,29 @@ void countOuterPartitionConnections(int outerConnectionsnections[], Node *neighb
     }
 }
 
-int evaluateNeighbours(Node *neighbourList[], MarkedNeighbours neighbour, int vertexDegree[], int curPartId, int partitionsTab[], int curPartSize, int pMin)
+int evaluateNeighbours(Node *neighbourList[], MarkedNeighbours neighbour, int vertexDegree[], int curPartId, int partitionsTab[], int curPartSize, int pMin)//evaluates vertex based of innerConnections(within partition), outerConnectionsnections(out of partition), 
 {
+    //"w" are weights for calculating score based on 3 factors mentioned above
     int w1 = 2;
     int w2 = 5;
     int w3 = 1;
     int score = 0;
     int innerConnections = 0;
-    Node *neighbour_id = neighbourList[neighbour.id]; // neighbours of evalueted neighbour
+    Node *neighbour_id = neighbourList[neighbour.id]; // neighbours of evalueted neighbour(vertex)
     while (neighbour_id)
     {
         if (vertexDegree[neighbour_id->vertex] == 1)
         {
             if (curPartSize >= pMin)
             {
-                score += 300; // chętnie zamknij tę gałąź
+                score += 300; // boost score in order to close this single "tunnel"
             }
             else
             {
-                score -= 50; // na razie nie
+                score -= 50; // leave it for now
             }
         }
-        if (partitionsTab[neighbour_id->vertex] == curPartId)
+        if (partitionsTab[neighbour_id->vertex] == curPartId)//calculates innerConnections
             innerConnections++;
         neighbour_id = neighbour_id->next;
     }
@@ -52,7 +53,7 @@ int evaluateNeighbours(Node *neighbourList[], MarkedNeighbours neighbour, int ve
     return score;
 }
 
-int qsortComparator(const void *a, const void *b)
+int qsortComparator(const void *a, const void *b)//custom comparator for sorting neighbours by score
 {
     const MarkedNeighbours *ma = (const MarkedNeighbours *)a;
     const MarkedNeighbours *mb = (const MarkedNeighbours *)b;
@@ -145,10 +146,10 @@ int findBestPartitionStart(int partitionTab[], int n, Node *neighbourList[])
 int findBestNearPartition(Node *neighbourList[], int partitionTab[], int partSize[], int unassignedNode, int k, double p, int n) // searches for best partition that is near that node
 {
     Node *curNeighbour = neighbourList[unassignedNode];
-    MarkedNeighbours *partScore = calloc(k, sizeof(MarkedNeighbours));
+    MarkedNeighbours *partScore = calloc(k, sizeof(MarkedNeighbours));//table to rank partitions, and store pair(socre,id)
     for (int i = 0; i < k; i++)
         partScore[i].id = i;
-    while (curNeighbour)
+    while (curNeighbour)//assigns score to partitions based of how many connections unassigned node has to that partition
     {
         if (partitionTab[curNeighbour->vertex] >= 0)
             partScore[partitionTab[curNeighbour->vertex]].score++;
@@ -156,13 +157,12 @@ int findBestNearPartition(Node *neighbourList[], int partitionTab[], int partSiz
     }
     qsort(partScore, k, sizeof(MarkedNeighbours), qsortComparator);
 
-    // max possible partition size
     int minPartitionId = -1;
     int minPartitionSize = INT_MAX;
     int maxPartitionSize = INT_MIN;
     for (int i = 0; i < k; i++)
     {
-        if (partSize[i] < minPartitionSize)
+        if (partSize[i] < minPartitionSize)//used if instead of min macro, because i might need minPartitionId
         {
             minPartitionSize = partSize[i];
             minPartitionId = i;
@@ -178,7 +178,7 @@ int findBestNearPartition(Node *neighbourList[], int partitionTab[], int partSiz
     {
         if (partScore[i].score <= 0) // partitions not near vertex, maby evaluate later(base on size, better choose smaller)
             break;
-        if (partSize[partScore[i].id] + 1 <= maxPossibleSize)
+        if (partSize[partScore[i].id] + 1 <= maxPossibleSize)//+1 because, current unassignedNode may be added there
         {
             return partScore[i].id;
         }
@@ -188,14 +188,15 @@ int findBestNearPartition(Node *neighbourList[], int partitionTab[], int partSiz
     return minPartitionId;
 }
 
-void assignRemainingNodes(Node *neighbourList[], int partitionTab[], int partSize[], int n, int k, double p)
+
+void assignRemainingNodes(Node *neighbourList[], int partitionTab[], int partSize[], int n, int k, double p)//fuunction that assigns unassigned node
 {
     int choosedPartition = 0;
     for (int i = 0; i < n; i++)
     {
         if (partitionTab[i] != -1)
             continue;
-        choosedPartition = findBestNearPartition(neighbourList, partitionTab, partSize, i, k, p, n);
+        choosedPartition = findBestNearPartition(neighbourList, partitionTab, partSize, i, k, p, n);//return best partition id
         partSize[choosedPartition]++;
         partitionTab[i] = choosedPartition;
     }
@@ -365,6 +366,11 @@ void dfsIterative(Node *neighbourList[], int partitionsTab[], int *curPartSize, 
 
 Node **convertMatrixToList(int *neighboursMatrix[], int n) // convert neighbourMatrix to neighbourList
 {
+    /*
+    The idea of this neihbourList is to minimize the memory usage,
+    example of the idea, is that for exaple there are connections 1-2,1-3,1-5,1-6
+    neihbourList[1]={2,3,5,6} <-this will be linked list
+    */
     Node **mapNeighbours = malloc(n * sizeof(Node *));
     Node *node_index;
     Node *dummy_node;
@@ -375,7 +381,7 @@ Node **convertMatrixToList(int *neighboursMatrix[], int n) // convert neighbourM
         mapNeighbours[i] = NULL;
         for (int j = 0; j < n; j++)
         {
-            if (neighboursMatrix[i][j] == 1)
+            if (neighboursMatrix[i][j] == 1)//if there is connection creates new Node
             {
                 node_index->next = malloc(sizeof(Node));
                 node_index = node_index->next;
@@ -390,9 +396,9 @@ Node **convertMatrixToList(int *neighboursMatrix[], int n) // convert neighbourM
 }
 
 // create
-int *createOuterConnections(Node *neighbourList[], int partitionTab[], int *partitions[],int partSize[], int k, int n)
+int *createOuterConnections(Node *neighbourList[], int partitionTab[], int *partitions[],int partSize[], int k, int n)//ERROR?(why visited)
 {
-    int *outerConnectionsnections = calloc(k, sizeof(int));
+    int *outerConnections = calloc(k, sizeof(int));
     int *visited;
 
     for (int i = 0; i < k; i++)
@@ -400,14 +406,14 @@ int *createOuterConnections(Node *neighbourList[], int partitionTab[], int *part
         visited = calloc(n, sizeof(int));
         for (int j = 0; j < partSize[i]; j++)
         {
-            countOuterPartitionConnections(outerConnectionsnections, neighbourList, partitions[i][j], partitionTab);
+            countOuterPartitionConnections(outerConnections, neighbourList, partitions[i][j], partitionTab);
         }
         free(visited);
     }
-    return outerConnectionsnections;
+    return outerConnections;
 }
 
-int **createPartition(int partitionsTab[], int n, int k, int partitionSize[])
+int **createPartition(int partitionsTab[], int n, int k, int partitionSize[])//creates a table which stores indexes of nodes that belong at that partition
 {
     int **partition = malloc(k * sizeof(int *));
     for (int i = 0; i < k; i++)
@@ -416,10 +422,10 @@ int **createPartition(int partitionsTab[], int n, int k, int partitionSize[])
     int elemCounter = 0;
     for (int i = 0; i < k; i++)
     {
-        elemCounter = 0;
+        elemCounter = 0;//counts number of current elements in partition[i], in order to add element to current end(push it back)
         for (int j = 0; j < n && elemCounter < partitionSize[i]; j++)
         {
-            if (partitionsTab[j] == i)
+            if (partitionsTab[j] == i)//if node belongs to i-th partition ad it
             {
                 partition[i][elemCounter] = j;
                 elemCounter++;
@@ -430,7 +436,7 @@ int **createPartition(int partitionsTab[], int n, int k, int partitionSize[])
     return partition;
 }
 
-int *createVertexDegree(Node **neighbourList, int n)
+int *createVertexDegree(Node **neighbourList, int n)//creates table that stores number of connections that node has
 {
     int *vertexDegree = calloc(n, sizeof(int));
     if (!vertexDegree)
@@ -442,7 +448,7 @@ int *createVertexDegree(Node **neighbourList, int n)
     for (int i = 0; i < n; i++)
     {
         Node *it = neighbourList[i];
-        while (it)
+        while (it)//loop thrue i-th node neighbours and count them
         {
             vertexDegree[i]++;
             it = it->next;
@@ -451,7 +457,7 @@ int *createVertexDegree(Node **neighbourList, int n)
     return vertexDegree;
 }
 
-int *createPartitionTab(int n)
+int *createPartitionTab(int n)//just malloc partitionTab and set all it's values to -1, because there will never be -1, partition
 {
     int *partitionTab = malloc(n * sizeof(int));
     for (int i = 0; i < n; i++)
@@ -459,7 +465,7 @@ int *createPartitionTab(int n)
     return partitionTab;
 }
 
-// basic test n=12 graph with 3 columns and 4 rows, conencted to up,down,right ,left
+//creates basic test n=12 graph with 3 columns and 4 rows, conencted to up,down,right ,left
 int **createBasicTestGraph(int n)
 {
     if (n != 12)
@@ -493,12 +499,12 @@ int **createBasicTestGraph(int n)
 
 // print
 
-void printPartitionsTab(int *partitions, int n, int k)
+void printPartitionsTab(int *partitions, int n, int k)//just prints partitionTab
 {
-    printf("== Podział na %d części ==\n", k);
+    printf("== Divide on %d parts ==\n", k);
     for (int i = 0; i < k; i++)
     {
-        printf("Partycja %d: ", i);
+        printf("Partition %d: ", i);
         for (int j = 0; j < n; j++)
         {
             if (partitions[j] == i)
@@ -508,9 +514,9 @@ void printPartitionsTab(int *partitions, int n, int k)
     }
 }
 
-void printConnections(int **matrix, int n)
+void printConnections(int **matrix, int n)//prints connections from connectinMatrix
 {
-    printf("== Wszystkie połączenia z macierzy sąsiedztwa ==\n");
+    printf("== Connections ==\n");
     for (int i = 0; i < n; i++)
     {
         for (int j = 0; j < n; j++)
@@ -523,7 +529,7 @@ void printConnections(int **matrix, int n)
     }
 }
 
-void printPartition(int **partition, int k, int partitionSize[])
+void printPartition(int **partition, int k, int partitionSize[])//prints partitions
 {
     printf("Partitions:\n");
     for (int i = 0; i < k; i++)
@@ -536,7 +542,7 @@ void printPartition(int **partition, int k, int partitionSize[])
     printf("\n");
 }
 
-void printOuterConnections(int *outerConnections, int k)
+void printOuterConnections(int *outerConnections, int k)//prints number of partition's outer connections
 {
     printf("Partitions outer connections:\n");
     for (int i = 0; i < k; i++)
@@ -546,7 +552,7 @@ void printOuterConnections(int *outerConnections, int k)
     printf("\n");
 }
 
-void printPartitionsSizes(int partSize[],int k)
+void printPartitionsSizes(int partSize[],int k)//prints partitions sizes
 {
     printf("Partition sizes:\n");
     for(int i=0;i<k;i++)

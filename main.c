@@ -31,18 +31,17 @@ int  main(int argc, char **argv)
         }
     }
 
-    int k = 5;   // liczba partycji
+    int k = 5;   // number of partitions
     int firstPartSize = n / k; 
     double precision=0.5f;
     int remainingNodes=n;
     long long average[2]={0,0};//0-index general average,1-index current average
     int pMin=0;//possible min
     int pMax=0;//possible max
-    int* partSize=malloc(sizeof(int) * k);
-        
-
-    int *partitionTab = createPartitionTab(n);
-    int *vertexDegree = createVertexDegree(neighbourList,n);
+    int* partSize=malloc(sizeof(int) * k);//table of partitions sizes
+     
+    int *partitionTab = createPartitionTab(n);//table in which vertex numbers are given a partition number
+    int *vertexDegree = createVertexDegree(neighbourList,n);//how many connectins vertex has
 
     int curStart = 0;
     for (int i = 0; i < k; i++) {
@@ -56,8 +55,8 @@ int  main(int argc, char **argv)
 
         int remainingParts = k - i;
         double avg = (double)remainingNodes / remainingParts;
-        pMin = (int)(avg * (1.0 - precision));
-        pMax = (int)(avg * (1.0 + precision));
+        pMin = (int)(avg * (1.0 - precision));//calculats possible min, for next partition
+        pMax = (int)(avg * (1.0 + precision));//calculats possible max, for next partition
         if (pMin < 1) pMin = 1;
         if (pMax > remainingNodes) pMax = remainingNodes;
 
@@ -74,10 +73,10 @@ int  main(int argc, char **argv)
             average[0]/=2;
         }
 
-        printf("DFS zakończony: partycja %d, rozmiar = %d, suma = %lld\n", i, curPartSize, average[1]);
-        //printf("Average[1]=%lld\n",average[1]);
+        printf("DFS ended: partition %d, size = %d, sum = %lld\n", i, curPartSize, average[1]);
+
         if (curPartSize > 0)
-            printf("Średnia: %lld\n", average[1] / curPartSize);
+            printf("Average: %lld\n", average[1] / curPartSize);
     }
 
     //assigning remaining nodes
