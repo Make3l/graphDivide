@@ -7,7 +7,7 @@
 
 int  main(int argc, char **argv)
 {
-    int n=0;
+    int n=0;//nummber of verticies
     Node **neighbourList=NULL;
     int** neighbourMatrix=NULL;
     if(argc<2)

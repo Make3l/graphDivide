@@ -20,6 +20,8 @@ void countOuterPartitionConnections(int outerConnectionsnections[],Node *neighbo
 int evaluateNeighbours(Node *neighborList[],MarkedNeighbours neighbour,int vertexDegree[],int curPartId, int partitionsTab[],int curPartSize,int pMin);
 int qsortComparator(const void *a, const void *b);
 int evaluateStart( Node *neighbourList[],int evNode,int partitionTab[],int vertexDegree[],int n);
+int countEdgesAmongUnassigned(Node *neighbourList[],int partitionTab[], int startNode);
+long scoreVertex(int v, Node *neighbourList[], int partitionTab[]);
 int findBestPartitionStart(int partitionTab[],int n, Node *neighbourList[]);
 int findBestNearPartition(Node *neighbourList[],int partitionTab[],int partSize[],int unassignedNode,int k,double p,int n);
 void assignRemainingNodes(Node *neighbourList[],int partitionTab[],int partSize[],int n,int k,double p);

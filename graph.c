@@ -5,16 +5,15 @@
 #include <stdlib.h>
 #include <limits.h>
 
-#define WEIGHT_DEG 10 // waga za każdy nieprzydzielony sąsiad
-#define WEIGHT_DENS 1 // waga za każdą krawędź pomiędzy nieprzydzielonymi sąsiadami
+
 
 // helpers
 
-void countOuterPartitionConnections(int outerConnectionsnections[], Node *neighbourList[], int startNode, int partitionTab[])//ERROR?
+void countOuterPartitionConnections(int outerConnectionsnections[], Node *neighbourList[], int startNode, int partitionTab[])//counts number of outer connections of i-th partition 
 {
     int curPartition = partitionTab[startNode];
     Node *node_it = neighbourList[startNode];
-    while (node_it)
+    while (node_it)//iterates through startNode's neighbours and checks if they are in the same partition if not adds to outerConnection counter
     {
         if (partitionTab[node_it->vertex] != curPartition)
             outerConnectionsnections[curPartition]++;
@@ -22,7 +21,7 @@ void countOuterPartitionConnections(int outerConnectionsnections[], Node *neighb
     }
 }
 
-int evaluateNeighbours(Node *neighbourList[], MarkedNeighbours neighbour, int vertexDegree[], int curPartId, int partitionsTab[], int curPartSize, int pMin)//evaluates vertex based of innerConnections(within partition), outerConnectionsnections(out of partition), 
+int evaluateNeighbours(Node *neighbourList[], MarkedNeighbours neighbour, int vertexDegree[], int curPartId, int partitionsTab[], int curPartSize, int pMin) // evaluates vertex based of innerConnections(within partition), outerConnectionsnections(out of partition),
 {
     //"w" are weights for calculating score based on 3 factors mentioned above
     int w1 = 2;
@@ -44,7 +43,7 @@ int evaluateNeighbours(Node *neighbourList[], MarkedNeighbours neighbour, int ve
                 score -= 50; // leave it for now
             }
         }
-        if (partitionsTab[neighbour_id->vertex] == curPartId)//calculates innerConnections
+        if (partitionsTab[neighbour_id->vertex] == curPartId) // calculates innerConnections
             innerConnections++;
         neighbour_id = neighbour_id->next;
     }
@@ -53,83 +52,85 @@ int evaluateNeighbours(Node *neighbourList[], MarkedNeighbours neighbour, int ve
     return score;
 }
 
-int qsortComparator(const void *a, const void *b)//custom comparator for sorting neighbours by score
+int qsortComparator(const void *a, const void *b) // custom comparator for sorting neighbours by score
 {
     const MarkedNeighbours *ma = (const MarkedNeighbours *)a;
     const MarkedNeighbours *mb = (const MarkedNeighbours *)b;
     return mb->score - ma->score;
 }
 
-// zwraca liczbę nieprzydzielonych sąsiadów
-int countUnassignedNeighbors(Node *nbrs, int partitionTab[])
+int countUnassignedNeighbours(Node *neighbours, int partitionTab[])//counts unassigned neighbours
 {
-    int cnt = 0;
-    for (Node *it = nbrs; it; it = it->next)
-        if (partitionTab[it->vertex] == -1)
-            cnt++;
-    return cnt;
+    int count=0;
+    Node* it=neighbours;
+    while(it)
+    {
+        if(partitionTab[it->vertex]==-1)
+            count++;
+        it=it->next;
+    }
+    return count;
 }
 
-// liczy, ile krawędzi jest pomiędzy parami nieprzydzielonych sąsiadów v
-int countEdgesAmongUnassigned(Node *nbrs, int partitionTab[], Node *neighbourList[])
+int countEdgesAmongUnassigned(Node *neighbourList[],int partitionTab[], int startNode)//function counts density, how many connections are between two neighbours of startNode
 {
-    // zbierz najpierw nieprzydzielonych sąsiadów do tablicy:
-    int tmp[1024], t = 0;
-    for (Node *it = nbrs; it; it = it->next)
+    Node *it=neighbourList[startNode];//iterator of startNode's neighbours
+    int connections=0;
+    int neighboursTab[2048];//table of startNode's neighbours
+    int size=0;
+    while(it)
     {
-        if (partitionTab[it->vertex] == -1)
-            tmp[t++] = it->vertex;
+        if(partitionTab[it->vertex]==-1)
+            neighboursTab[size++]=it->vertex;
+        it=it->next;
     }
-    // policz krawędzie między każdą parą (u,w)
-    int edges = 0;
-    for (int i = 0; i < t; i++)
-    {
-        int u = tmp[i];
-        for (int j = i + 1; j < t; j++)
+
+    int u=0,w=0;
+    for(int i=0;i<size-1;i++)//checks how many connections there are between each unique vertex pair (u,w), and counts it in "connctions"
+        for(int j=i+1;j<size;j++)
         {
-            int w = tmp[j];
-            // sprawdź czy istnieje krawędź u–w
-            for (Node *it = neighbourList[u]; it; it = it->next)
-            {
-                if (it->vertex == w)
+            u=neighboursTab[i];
+            w=neighboursTab[j];
+            for(Node *it=neighbourList[u];it;it=it->next)
+                if(it->vertex==w)
                 {
-                    edges++;
+                    connections++;
                     break;
-                }
-            }
+                }   
         }
-    }
-    return edges;
+        return connections;
 }
 
-// nowa heurystyka zwraca score = WEIGHT_DEG * degUnassigned + WEIGHT_DENS * localDensity
-long scoreVertex(int v, Node *neighbourList[], int partitionTab[])
+
+long scoreVertex(int v, Node *neighbourList[], int partitionTab[])//counst a vertex score based on unassigned neighbours and neighbours conneections density
 {
-    int degUn = countUnassignedNeighbors(neighbourList[v], partitionTab);
+    int w1=10; // weight for every unassigned neighbour
+    int w2=1; // weight for every edge between unassigned nieghbours(density)
+    int degUn = countUnassignedNeighbours(neighbourList[v], partitionTab);
     if (degUn <= 1)
-        return LONG_MIN; // pomiń liście i węzły bez potencjału rozrostu
-    int dens = countEdgesAmongUnassigned(neighbourList[v], partitionTab, neighbourList);
-    return (long)WEIGHT_DEG * degUn + (long)WEIGHT_DENS * dens;
+        return LONG_MIN; // skip weak
+    int dens = countEdgesAmongUnassigned(neighbourList, partitionTab, v);
+    return (long)w1 * degUn + (long)w2 * dens;
 }
 
-int findBestPartitionStart(int partitionTab[], int n, Node *neighbourList[])
+int findBestPartitionStart(int partitionTab[], int n, Node *neighbourList[])//finds best node to start partition 
 {
     int bestNode = -1;
     long bestScore = LONG_MIN;
 
     for (int i = 0; i < n; i++)
     {
-        if (partitionTab[i] != -1)
+        if (partitionTab[i] != -1)//if already assigned skip
             continue;
-        long sc = scoreVertex(i, neighbourList, partitionTab);
-        if (sc > bestScore)
+        long score = scoreVertex(i, neighbourList, partitionTab);//evaluate this vertex
+        if (score > bestScore)
         {
-            bestScore = sc;
+            bestScore = score;
             bestNode = i;
         }
     }
 
-    // jeżeli nic nie znaleźliśmy (np. zostały liście), weź pierwszy nieprzydzielony
+    // if nonting interesting finded take first vetrex
     if (bestNode == -1)
     {
         for (int i = 0; i < n; i++)
@@ -139,17 +140,17 @@ int findBestPartitionStart(int partitionTab[], int n, Node *neighbourList[])
         }
     }
 
-    //printf("WYBRANO WIERZCHOŁEK %d, score = %ld\n", bestNode, bestScore);
+    // printf("WYBRANO WIERZCHOŁEK %d, score = %ld\n", bestNode, bestScore);
     return bestNode;
 }
 
 int findBestNearPartition(Node *neighbourList[], int partitionTab[], int partSize[], int unassignedNode, int k, double p, int n) // searches for best partition that is near that node
 {
     Node *curNeighbour = neighbourList[unassignedNode];
-    MarkedNeighbours *partScore = calloc(k, sizeof(MarkedNeighbours));//table to rank partitions, and store pair(socre,id)
+    MarkedNeighbours *partScore = calloc(k, sizeof(MarkedNeighbours)); // table to rank partitions, and store pair(socre,id)
     for (int i = 0; i < k; i++)
         partScore[i].id = i;
-    while (curNeighbour)//assigns score to partitions based of how many connections unassigned node has to that partition
+    while (curNeighbour) // assigns score to partitions based of how many connections unassigned node has to that partition
     {
         if (partitionTab[curNeighbour->vertex] >= 0)
             partScore[partitionTab[curNeighbour->vertex]].score++;
@@ -162,7 +163,7 @@ int findBestNearPartition(Node *neighbourList[], int partitionTab[], int partSiz
     int maxPartitionSize = INT_MIN;
     for (int i = 0; i < k; i++)
     {
-        if (partSize[i] < minPartitionSize)//used if instead of min macro, because i might need minPartitionId
+        if (partSize[i] < minPartitionSize) // used if instead of min macro, because i might need minPartitionId
         {
             minPartitionSize = partSize[i];
             minPartitionId = i;
@@ -178,7 +179,7 @@ int findBestNearPartition(Node *neighbourList[], int partitionTab[], int partSiz
     {
         if (partScore[i].score <= 0) // partitions not near vertex, maby evaluate later(base on size, better choose smaller)
             break;
-        if (partSize[partScore[i].id] + 1 <= maxPossibleSize)//+1 because, current unassignedNode may be added there
+        if (partSize[partScore[i].id] + 1 <= maxPossibleSize) //+1 because, current unassignedNode may be added there
         {
             return partScore[i].id;
         }
@@ -188,15 +189,14 @@ int findBestNearPartition(Node *neighbourList[], int partitionTab[], int partSiz
     return minPartitionId;
 }
 
-
-void assignRemainingNodes(Node *neighbourList[], int partitionTab[], int partSize[], int n, int k, double p)//fuunction that assigns unassigned node
+void assignRemainingNodes(Node *neighbourList[], int partitionTab[], int partSize[], int n, int k, double p) // fuunction that assigns unassigned node
 {
     int choosedPartition = 0;
     for (int i = 0; i < n; i++)
     {
         if (partitionTab[i] != -1)
             continue;
-        choosedPartition = findBestNearPartition(neighbourList, partitionTab, partSize, i, k, p, n);//return best partition id
+        choosedPartition = findBestNearPartition(neighbourList, partitionTab, partSize, i, k, p, n); // return best partition id
         partSize[choosedPartition]++;
         partitionTab[i] = choosedPartition;
     }
@@ -204,51 +204,53 @@ void assignRemainingNodes(Node *neighbourList[], int partitionTab[], int partSiz
 
 // logic
 
+/*
+I used iterative version(one function below this one) of dfs because it uses less memory than recursion type
+*/
 void dfs(Node *neighbourList[], int partitionsTab[], int *curPartSize, int maxFirstPartSize, int vertexDegree[], int current, int curPartId, long long average[], int pMin, int pMax) // vertexDegree->connction counter,
 {
-    if (partitionsTab[current] != -1)
+    if (partitionsTab[current] != -1) // if visited return
         return;
-    partitionsTab[current] = curPartId;
+    partitionsTab[current] = curPartId; // assigns a partition
     (*curPartSize)++;
 
-    if (curPartId == 0 && maxFirstPartSize <= (*curPartSize))
+    if (curPartId == 0 && maxFirstPartSize <= (*curPartSize)) // if it is first partition do it till fixed size (maxFirstPartSize ) == n/k (numberOfVerticies/numberOfPartiton)
         return;
-    else if (curPartId != 0 && pMax < (*curPartSize))
+    else if (curPartId != 0 && pMax < (*curPartSize)) // if not first partition do it till pMax
         return;
 
     Node *node_it = neighbourList[current];
     int elemCounter = 0;
     MarkedNeighbours *neighbours = malloc(vertexDegree[current] * sizeof(MarkedNeighbours));
-    while (node_it)
+    while (node_it) // iterates through currentNode's neighbours
     {
         if (partitionsTab[node_it->vertex] == -1) // doesnt belong to specyfic partition
         {
-            neighbours[elemCounter].id = node_it->vertex;
-            neighbours[elemCounter].score = evaluateNeighbours(neighbourList, neighbours[elemCounter], vertexDegree, curPartId, partitionsTab, (*curPartSize), pMin);
+            neighbours[elemCounter].id = node_it->vertex;// assigns id
+            neighbours[elemCounter].score = evaluateNeighbours(neighbourList, neighbours[elemCounter], vertexDegree, curPartId, partitionsTab, (*curPartSize), pMin); // assigns score
             elemCounter++;
         }
         node_it = node_it->next;
     }
 
-    qsort(neighbours, elemCounter, sizeof(MarkedNeighbours), qsortComparator);
+    qsort(neighbours, elemCounter, sizeof(MarkedNeighbours), qsortComparator); // sorts in descending order by nieghbour score
+
     for (int i = 0; i < elemCounter; i++)
     {
         if (curPartId != 0)
         {
-            if (pMax < (*curPartSize) || (neighbours[i].score < average[0] && (*curPartSize) >= pMin)) // not worth it
+            if (pMax < (*curPartSize) || (neighbours[i].score < average[0] && (*curPartSize) >= pMin)) // if size is exceeded break, or when (score is below average and minSize is reached) break
                 break;
         }
         else
         {
-            if (maxFirstPartSize <= (*curPartSize))
+            if (maxFirstPartSize <= (*curPartSize)) // if first partition size is exceeded break
                 break;
         }
 
-        if (partitionsTab[neighbours[i].id] == -1)
+        if (partitionsTab[neighbours[i].id] == -1) // if unvisited
         {
-            if (curPartId != 0 && *curPartSize >= pMax)
-                return;
-            average[1] += neighbours[i].score; // added to current average sum
+            average[1] += neighbours[i].score; // adding to current average sum
             dfs(neighbourList, partitionsTab, curPartSize, maxFirstPartSize, vertexDegree, neighbours[i].id, curPartId, average, pMin, pMax);
         }
     }
@@ -257,62 +259,47 @@ void dfs(Node *neighbourList[], int partitionsTab[], int *curPartSize, int maxFi
 
 void dfsIterative(Node *neighbourList[], int partitionsTab[], int *curPartSize, int maxFirstPartSize, int vertexDegree[], int current, int curPartId, long long average[], int pMin, int pMax, int n) // vertexDegree->connction counter,
 {
-    /*
-    if (*curPartSize == 0)
-    {
-        Node *n_id = neighbourList[current];
-        int counter = 0;
-        while (n_id)
-        {
-            if (partitionsTab[n_id->vertex] == -1)
-                counter++;
-            n_id = n_id->next;
-        }
-        printf("    PART %d, vertexDegree[start] = %d, realnie ma %d drog\n", curPartId, vertexDegree[current], counter);
-    }
-    */
-
-    MarkedNeighbours *stack = malloc(10 * n * sizeof(MarkedNeighbours));
+    MarkedNeighbours *stack = malloc(10 * n * sizeof(MarkedNeighbours)); // malocs 10x the size because sometimes normal size can be exceeded
     int stackSize = 0;
-    stack[stackSize++] = (MarkedNeighbours){current, INT_MAX};
+    stack[stackSize++] = (MarkedNeighbours){current, INT_MAX}; // adding first element on stack
 
     while (stackSize > 0)
     {
         MarkedNeighbours curNode = stack[--stackSize];
-        if (partitionsTab[curNode.id] != -1)
+        if (partitionsTab[curNode.id] != -1) // if visited skip this vertex
             continue;
 
         partitionsTab[curNode.id] = curPartId;
         (*curPartSize)++;
-        if (curNode.score < INT_MAX)
+
+        //code below checks for overflows
+        if (curNode.score > 0 && average[1] > LLONG_MAX - curNode.score)
         {
-            if (curNode.score > 0 && average[1] > LLONG_MAX - curNode.score)
-            {
-                fprintf(stderr, "Overflow: average[1] + curNode.score > LLONG_MAX\n");
-                exit(1);
-            }
-            if (curNode.score < 0 && average[1] < LLONG_MIN - curNode.score)
-            {
-                fprintf(stderr, "Underflow: average[1] + curNode.score < LLONG_MIN\n");
-                exit(1);
-            }
-            average[1] += curNode.score;
+            fprintf(stderr, "Overflow: average[1] + curNode.score > LLONG_MAX\n");
+            exit(1);
         }
+        else if (curNode.score < 0 && average[1] < LLONG_MIN - curNode.score)
+        {
+            fprintf(stderr, "Underflow: average[1] + curNode.score < LLONG_MIN\n");
+            exit(1);
+        }
+
+        average[1] += curNode.score;// adding to current average sum
 
         if (curPartId != 0)
         {
-            if (pMax <= *curPartSize)
+            if (pMax <= *curPartSize)//do it till partition reaches pMax
             {
                 break;
             }
 
-            if (curNode.score < (int)(average[0] * 0.8) && *curPartSize >= pMin)
+            if (curNode.score < (int)(average[0] * 0.8) && *curPartSize >= pMin)//when score is below 80% average and minSize is reached -> continue
                 continue;
         }
 
         if (curPartId == 0)
         {
-            if (maxFirstPartSize <= (*curPartSize))
+            if (maxFirstPartSize <= (*curPartSize))// do it till first partition reaches maxFirstPartSize
             {
                 break;
             }
@@ -327,24 +314,27 @@ void dfsIterative(Node *neighbourList[], int partitionsTab[], int *curPartSize, 
             exit(1);
         }
 
-        while (node_it)
+        while (node_it)// iterates through currentNode's neighbours
         {
             if (partitionsTab[node_it->vertex] == -1)
             {
-                neighbours[elemCounter].id = node_it->vertex;
-                neighbours[elemCounter].score = evaluateNeighbours(neighbourList, neighbours[elemCounter], vertexDegree, curPartId, partitionsTab, (*curPartSize), pMin);
+                neighbours[elemCounter].id = node_it->vertex;// assigns id
+                neighbours[elemCounter].score = evaluateNeighbours(neighbourList, neighbours[elemCounter], vertexDegree, curPartId, partitionsTab, (*curPartSize), pMin);// assigns score
                 elemCounter++;
             }
             node_it = node_it->next;
         }
 
+        /*
         for (int i = 0; i < elemCounter; i++)
         {
             printf("  DFS %d: sąsiad %d -> score = %d (deg = %d)\n", curPartId, neighbours[i].id, neighbours[i].score, vertexDegree[neighbours[i].id]);
         }
-        qsort(neighbours, elemCounter, sizeof(MarkedNeighbours), qsortComparator);
+        */
 
-        for (int i = elemCounter - 1; i >= 0; i--)
+        qsort(neighbours, elemCounter, sizeof(MarkedNeighbours), qsortComparator);// sorts in descending order by nieghbour score
+
+        for (int i = elemCounter - 1; i >= 0; i--)//iterates by neighbours in reverse order because "best" nodes need to be on top of the stack
         {
             if (partitionsTab[neighbours[i].id] == -1)
             {
@@ -353,7 +343,7 @@ void dfsIterative(Node *neighbourList[], int partitionsTab[], int *curPartSize, 
                     fprintf(stderr, "Stack overflow in dfsIterative()\n");
                     break;
                 }
-                stack[stackSize++] = neighbours[i];
+                stack[stackSize++] = neighbours[i];//adds neighbours to the stack
             }
         }
 
@@ -381,7 +371,7 @@ Node **convertMatrixToList(int *neighboursMatrix[], int n) // convert neighbourM
         mapNeighbours[i] = NULL;
         for (int j = 0; j < n; j++)
         {
-            if (neighboursMatrix[i][j] == 1)//if there is connection creates new Node
+            if (neighboursMatrix[i][j] == 1) // if there is connection creates new Node
             {
                 node_index->next = malloc(sizeof(Node));
                 node_index = node_index->next;
@@ -396,24 +386,18 @@ Node **convertMatrixToList(int *neighboursMatrix[], int n) // convert neighbourM
 }
 
 // create
-int *createOuterConnections(Node *neighbourList[], int partitionTab[], int *partitions[],int partSize[], int k, int n)//ERROR?(why visited)
+int *createOuterConnections(Node *neighbourList[], int partitionTab[], int *partitions[], int partSize[], int k, int n)//creates and fills outerConnectionTab, wchich represents number of outerConnection of i-th partition
 {
     int *outerConnections = calloc(k, sizeof(int));
-    int *visited;
 
     for (int i = 0; i < k; i++)
-    {
-        visited = calloc(n, sizeof(int));
         for (int j = 0; j < partSize[i]; j++)
-        {
             countOuterPartitionConnections(outerConnections, neighbourList, partitions[i][j], partitionTab);
-        }
-        free(visited);
-    }
+    
     return outerConnections;
 }
 
-int **createPartition(int partitionsTab[], int n, int k, int partitionSize[])//creates a table which stores indexes of nodes that belong at that partition
+int **createPartition(int partitionsTab[], int n, int k, int partitionSize[]) // creates a table which stores indexes of nodes that belong at that partition
 {
     int **partition = malloc(k * sizeof(int *));
     for (int i = 0; i < k; i++)
@@ -422,10 +406,10 @@ int **createPartition(int partitionsTab[], int n, int k, int partitionSize[])//c
     int elemCounter = 0;
     for (int i = 0; i < k; i++)
     {
-        elemCounter = 0;//counts number of current elements in partition[i], in order to add element to current end(push it back)
+        elemCounter = 0; // counts number of current elements in partition[i], in order to add element to current end(push it back)
         for (int j = 0; j < n && elemCounter < partitionSize[i]; j++)
         {
-            if (partitionsTab[j] == i)//if node belongs to i-th partition ad it
+            if (partitionsTab[j] == i) // if node belongs to i-th partition ad it
             {
                 partition[i][elemCounter] = j;
                 elemCounter++;
@@ -436,7 +420,7 @@ int **createPartition(int partitionsTab[], int n, int k, int partitionSize[])//c
     return partition;
 }
 
-int *createVertexDegree(Node **neighbourList, int n)//creates table that stores number of connections that node has
+int *createVertexDegree(Node **neighbourList, int n) // creates table that stores number of connections that node has
 {
     int *vertexDegree = calloc(n, sizeof(int));
     if (!vertexDegree)
@@ -448,7 +432,7 @@ int *createVertexDegree(Node **neighbourList, int n)//creates table that stores 
     for (int i = 0; i < n; i++)
     {
         Node *it = neighbourList[i];
-        while (it)//loop thrue i-th node neighbours and count them
+        while (it) // loop trought i-th node neighbours and count them
         {
             vertexDegree[i]++;
             it = it->next;
@@ -457,7 +441,7 @@ int *createVertexDegree(Node **neighbourList, int n)//creates table that stores 
     return vertexDegree;
 }
 
-int *createPartitionTab(int n)//just malloc partitionTab and set all it's values to -1, because there will never be -1, partition
+int *createPartitionTab(int n) // just malloc partitionTab and set all it's values to -1, because there will never be -1, partition
 {
     int *partitionTab = malloc(n * sizeof(int));
     for (int i = 0; i < n; i++)
@@ -465,7 +449,7 @@ int *createPartitionTab(int n)//just malloc partitionTab and set all it's values
     return partitionTab;
 }
 
-//creates basic test n=12 graph with 3 columns and 4 rows, conencted to up,down,right ,left
+// creates basic test n=12 graph with 3 columns and 4 rows, conencted to up,down,right ,left
 int **createBasicTestGraph(int n)
 {
     if (n != 12)
@@ -484,7 +468,7 @@ int **createBasicTestGraph(int n)
     for (int i = 0; i < rows; i++)
         for (int j = 0; j < columns; j++)
         {
-            if (i - 1 >= 0)
+            if (i - 1 >= 0) // if not out of bounderies adds connction
                 matrix[i * columns + j][(i - 1) * columns + j] = 1;
             if (i + 1 < rows)
                 matrix[i * columns + j][(i + 1) * columns + j] = 1;
@@ -499,7 +483,7 @@ int **createBasicTestGraph(int n)
 
 // print
 
-void printPartitionsTab(int *partitions, int n, int k)//just prints partitionTab
+void printPartitionsTab(int *partitions, int n, int k) // just prints partitionTab
 {
     printf("== Divide on %d parts ==\n", k);
     for (int i = 0; i < k; i++)
@@ -514,7 +498,7 @@ void printPartitionsTab(int *partitions, int n, int k)//just prints partitionTab
     }
 }
 
-void printConnections(int **matrix, int n)//prints connections from connectinMatrix
+void printConnections(int **matrix, int n) // prints connections from connectinMatrix
 {
     printf("== Connections ==\n");
     for (int i = 0; i < n; i++)
@@ -529,7 +513,7 @@ void printConnections(int **matrix, int n)//prints connections from connectinMat
     }
 }
 
-void printPartition(int **partition, int k, int partitionSize[])//prints partitions
+void printPartition(int **partition, int k, int partitionSize[]) // prints partitions
 {
     printf("Partitions:\n");
     for (int i = 0; i < k; i++)
@@ -542,7 +526,7 @@ void printPartition(int **partition, int k, int partitionSize[])//prints partiti
     printf("\n");
 }
 
-void printOuterConnections(int *outerConnections, int k)//prints number of partition's outer connections
+void printOuterConnections(int *outerConnections, int k) // prints number of partition's outer connections
 {
     printf("Partitions outer connections:\n");
     for (int i = 0; i < k; i++)
@@ -552,12 +536,12 @@ void printOuterConnections(int *outerConnections, int k)//prints number of parti
     printf("\n");
 }
 
-void printPartitionsSizes(int partSize[],int k)//prints partitions sizes
+void printPartitionsSizes(int partSize[], int k) // prints partitions sizes
 {
     printf("Partition sizes:\n");
-    for(int i=0;i<k;i++)
+    for (int i = 0; i < k; i++)
     {
-        printf("Partition %d size = %d\n",i,partSize[i]);
+        printf("Partition %d size = %d\n", i, partSize[i]);
     }
     printf("\n");
 }
