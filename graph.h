@@ -49,6 +49,7 @@ void printOuterConnections(int *outerConnections,int k);
 void printPartitionsSizes(int partSize[],int k);
 
 //free
-void freeAll(int **neighbourMatrix,Node *neighbourList[], int partitionTab[],int vertexDegree[],int *partition[],int outerConnections[],int n,int k);
+void freeNieghbourMatrix(int **neighbourMatrix,int n);
+void freeAll(Node *neighbourList[], int partitionTab[],int vertexDegree[],int *partition[],int outerConnections[],int n,int k);
 
 #endif

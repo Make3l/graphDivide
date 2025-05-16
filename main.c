@@ -16,6 +16,7 @@ int  main(int argc, char **argv)
         n=12;
         int** neighbourMatrix=createBasicTestGraph(n);
         neighbourList=convertMatrixToList(neighbourMatrix,n);
+        freeNieghbourMatrix(neighbourMatrix,n);
     }
     else
     {
@@ -31,9 +32,9 @@ int  main(int argc, char **argv)
         }
     }
 
-    int k = 5;   // number of partitions
+    int k = 4;   // number of partitions
     int firstPartSize = n / k; 
-    double precision=0.5f;
+    double precision=0.2f;
     int remainingNodes=n;
     long long average[2]={0,0};//0-index general average,1-index current average
     int pMin=0;//possible min
@@ -93,7 +94,7 @@ int  main(int argc, char **argv)
 
     //printPartitionsTab(partitionTab, n, k);
 
-    freeAll(neighbourMatrix,neighbourList,partitionTab,vertexDegree,partition,outerConnections,n,k);
+    freeAll(neighbourList,partitionTab,vertexDegree,partition,outerConnections,n,k);
 
     return 0;
 }

@@ -261,7 +261,7 @@ void dfsIterative(Node *neighbourList[], int partitionsTab[], int *curPartSize, 
 {
     MarkedNeighbours *stack = malloc(10 * n * sizeof(MarkedNeighbours)); // malocs 10x the size because sometimes normal size can be exceeded
     int stackSize = 0;
-    stack[stackSize++] = (MarkedNeighbours){current, INT_MAX}; // adding first element on stack
+    stack[stackSize++] = (MarkedNeighbours){current, 0}; // adding first element on stack
 
     while (stackSize > 0)
     {
@@ -331,6 +331,7 @@ void dfsIterative(Node *neighbourList[], int partitionsTab[], int *curPartSize, 
             printf("  DFS %d: sąsiad %d -> score = %d (deg = %d)\n", curPartId, neighbours[i].id, neighbours[i].score, vertexDegree[neighbours[i].id]);
         }
         */
+        
 
         qsort(neighbours, elemCounter, sizeof(MarkedNeighbours), qsortComparator);// sorts in descending order by nieghbour score
 
@@ -547,8 +548,7 @@ void printPartitionsSizes(int partSize[], int k) // prints partitions sizes
 }
 
 // free
-
-void freeAll(int **neighbourMatrix, Node *neighbourList[], int partitionTab[], int vertexDegree[], int *partition[], int outerConnections[], int n, int k)
+void freeNieghbourMatrix(int **neighbourMatrix,int n)
 {
     if (neighbourMatrix)
     {
@@ -556,7 +556,10 @@ void freeAll(int **neighbourMatrix, Node *neighbourList[], int partitionTab[], i
             free(neighbourMatrix[i]);
         free(neighbourMatrix);
     }
+}
 
+void freeAll(Node *neighbourList[], int partitionTab[], int vertexDegree[], int *partition[], int outerConnections[], int n, int k)
+{
     if (neighbourList)
     {
         Node *cur;
@@ -584,33 +587,6 @@ void freeAll(int **neighbourMatrix, Node *neighbourList[], int partitionTab[], i
             free(partition[i]);
         free(partition);
     }
-
-    free(outerConnections); // cleaning outer connections
-}
-
-void freeAllWithoutMatrix(Node *neighbourList[], int partitionTab[], int vertexDegree[], int *partition[], int outerConnections[], int n, int k) // without neighbour matrix
-{
-    Node *cur;
-    Node *next;
-    for (int i = 0; i < n; i++) // cleaning neighbourList
-    {
-        cur = neighbourList[i];
-        while (cur)
-        {
-            next = cur->next;
-            free(cur);
-            cur = next;
-        }
-    }
-    free(neighbourList);
-
-    free(partitionTab); // cleanig partition tab(nodes[i]=partition,)
-
-    free(vertexDegree); // cleanig vertex degree
-
-    for (int i = 0; i < k; i++) // cleaning partition(partition:nodes,...)
-        free(partition[i]);
-    free(partition);
 
     free(outerConnections); // cleaning outer connections
 }
