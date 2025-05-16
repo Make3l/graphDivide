@@ -174,10 +174,24 @@ int  main(int argc, char **argv)
             exit(1);
         }
     }
-
     int k = 4;   // number of partitions
+    printf("On how many partition do you wanna divide this graph: ");
+    scanf("%d",&k);
+    if(k>n)
+    {
+        fprintf(stderr,"Number of partitions should be less or equal to number of verticies");
+        exit(1);
+    }
+    double precision=0.2f;
+    printf("What diference beetwen partition sizes do you accept within(0,1) range, suggested 0.2: ");
+    scanf("%lf",&precision);
+    if(precision>=1 || precision<=0)
+    {
+        fprintf(stderr,"Precision should be within(0,1) range");
+        exit(1);
+    }
+    printf("\n");
     int firstPartSize = n / k; 
-    double precision=0.3f;
     int remainingNodes=n;
     long long average[2]={0,0};//0-index general average,1-index current average
     int pMin=0;//possible min
@@ -218,9 +232,9 @@ int  main(int argc, char **argv)
             average[0]/=2;
         }
 
-        printf("DFS ended: partition %d, size = %d, sum = %lld\n", i, curPartSize, average[1]);
-        if (curPartSize > 0)
-            printf("Average: %lld\n", average[1] / curPartSize);
+        //printf("DFS ended: partition %d, size = %d, sum = %lld\n", i, curPartSize, average[1]);
+        //if (curPartSize > 0)
+          //  printf("Average: %lld\n", average[1] / curPartSize);
     }
 
     //assigning remaining nodes
