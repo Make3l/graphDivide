@@ -28,7 +28,7 @@ Można skompilować dwa warianty programu:
 
 ```bash
 make test       # Buduje wersję testową (interaktywne opcje testów)
-make main       # Buduje wersję główną z domyślnym testem lub wejściem z pliku
+make main-run       # Buduje wersję główną z domyślnym testem lub wejściem z pliku
 ```
 
 ---
