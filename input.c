@@ -153,11 +153,53 @@ Node **runCsrrg(const char *filename,int *n)
 
     // parsujemy: nV_sz ← #wierzchołków, nE ← #wejść w CSR
     parseCSR(filename, &nV_sz, &nE, &rowPtr, &indices);
-    printf("Wierzchołków: %zu, wpisów w CSR: %zu\n", nV_sz, nE);
+    //printf("Wierzchołków: %zu, wpisów w CSR: %zu\n", nV_sz, nE);
 
     // tu masz już int n jako liczbę wierzchołków
     (*n) = (int)nV_sz;
 
     // teraz przekazujesz n do buildAdjList
     return buildAdjList(nV_sz, rowPtr, indices);
+}
+
+int **readMaxtrixFromFile(char *filePath,int *n)//converts matrix in file to int** matrix
+{
+    FILE *file=fopen(filePath,"r");
+    if(file==NULL)
+    {
+        fprintf(file,"ERROR: File problem");
+        return NULL;
+    }
+
+    fscanf(file,"%d",n);//gets number of verticies
+
+    int **matrix = malloc((*n) * sizeof(int *));
+    if(matrix==NULL)
+    {
+        fprintf(file,"ERROR: Malloc problem");
+            fclose(file);
+        return NULL;
+    }
+
+    for (int i = 0; i < (*n); i++)
+    {
+        matrix[i] = calloc((*n), sizeof(int));
+    }
+
+    int a=0,b=0;
+    while(fscanf(file,"%d %d",&a,&b)==2)//gets connections, if they exist
+    {
+        if(a<(*n) && b<(*n) && a>=0 && b>=0)//checks if connections are correct (their id is in <0,n-1> range)
+        {
+            matrix[a][b]=1;
+            matrix[b][a]=1;
+        }
+        else
+        {
+            fprintf(file,"ERROR: Entered incorrect verticies numbers");
+        }
+    }
+
+    fclose(file);
+    return matrix;
 }

@@ -6,7 +6,6 @@
 #include <limits.h>
 
 
-
 // helpers
 
 void countOuterPartitionConnections(int outerConnectionsnections[], Node *neighbourList[], int startNode, int partitionTab[])//counts number of outer connections of i-th partition 
@@ -484,18 +483,21 @@ int **createBasicTestGraph(int n)
 
 // print
 
-void printPartitionsTab(int *partitions, int n, int k) // just prints partitionTab
+void printPartitionsTab(int *partitions, int n, int k,FILE *file) // just prints partitionTab
 {
-    printf("== Divide on %d parts ==\n", k);
+    if(file==NULL)
+        file=stdout;
+
+    fprintf(file,"== Divide on %d parts ==\n", k);
     for (int i = 0; i < k; i++)
     {
-        printf("Partition %d: ", i);
+        fprintf(file,"Partition %d: ", i);
         for (int j = 0; j < n; j++)
         {
             if (partitions[j] == i)
-                printf("%d ", j);
+                fprintf(file,"%d ", j);
         }
-        printf("\n");
+       fprintf(file,"\n");
     }
 }
 
@@ -537,14 +539,16 @@ void printOuterConnections(int *outerConnections, int k) // prints number of par
     printf("\n");
 }
 
-void printPartitionsSizes(int partSize[], int k) // prints partitions sizes
+void printPartitionsSizes(int partSize[], int k,FILE *file) // prints partitions sizes
 {
-    printf("Partition sizes:\n");
+    if(file==NULL)
+        file=stdout;
+    fprintf(file,"Partition sizes:\n");
     for (int i = 0; i < k; i++)
     {
-        printf("Partition %d size = %d\n", i, partSize[i]);
+        fprintf(file,"Partition %d size = %d\n", i, partSize[i]);
     }
-    printf("\n");
+    fprintf(file,"\n");
 }
 
 // free
@@ -581,7 +585,7 @@ void freeAll(Node *neighbourList[], int partitionTab[], int vertexDegree[], int 
 
     free(vertexDegree); // cleanig vertex degree
 
-    if (partitionTab)
+    if (partition)
     {
         for (int i = 0; i < k; i++) // cleaning partition(partition:nodes,...)
             free(partition[i]);

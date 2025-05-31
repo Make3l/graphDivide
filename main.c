@@ -100,7 +100,7 @@ int  main(int argc, char **argv)
     //assigning remaining nodes
     assignRemainingNodes(neighbourList,partitionTab,partSize,n,k,precision);
 
-    printPartitionsSizes(partSize,k);
+    printPartitionsSizes(partSize,k,NULL);
 
     int **partition=createPartition(partitionTab,n,k,partSize);
     printPartition(partition,k,partSize);
@@ -109,7 +109,7 @@ int  main(int argc, char **argv)
     int *outerConnections=createOuterConnections(neighbourList,partitionTab,partition,partSize,k,n);
     printOuterConnections(outerConnections,k);
 
-    //printPartitionsTab(partitionTab, n, k);
+    //printPartitionsTab(partitionTab, n, k, NULL);
 
     freeAll(neighbourList,partitionTab,vertexDegree,partition,outerConnections,n,k);
 
