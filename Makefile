@@ -1,7 +1,7 @@
 CC=cc
 #CFLAGS = -Wall -Wextra -g -fsanitize=undefined,address
-test: test-file.o graph.o input.o
-	$(CC) test-file.o graph.o input.o -o test.out
+test: test-file.o graph.o input.o tests.o
+	$(CC) test-file.o graph.o input.o tests.o -o test.out
 main-run: main.o graph.o input.o
 	$(CC) main.o graph.o input.o -o main-run.out
 
@@ -20,6 +20,8 @@ csrrg-test.o: csrrg-test.c
 	$(CC) -c csrrg-test.c
 input.o: input.c
 	$(CC) -c input.c
+tests.o: tests.c
+	$(CC) -c tests.c
 
 clean:
 	@rm -f *.out *.o
