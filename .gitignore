@@ -56,3 +56,51 @@ dkms.conf
 
 #mac
 .DS_Store
+
+# ===============================
+# JAVA & INTELLIJ / IDE SETTINGS
+# ===============================
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+out/
+target/
+*.log
+
+# VSCode
+.vscode/
+
+# Java build files (Maven/Gradle)
+*.class
+*.jar
+*.war
+*.ear
+*.zip
+
+# Maven & Gradle
+/logs/
+*.log
+*.mvn/
+target/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# JavaFX cache
+*.cache
+
+# Mac system files
+.DS_Store
+
+# Windows system files
+Thumbs.db
+
+# Test and result files
+results.txt
+*.tmp
+
+# Backup files
+*~
+*.swp
+*.bak
