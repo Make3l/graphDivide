@@ -39,7 +39,7 @@
 
 .input-field, .textarea-field {
     -fx-background-color: #2b2b3d;
-    -fx-text-fill: #e0e0e0;
+    -fx-text-fill: #e6f0ff;
     -fx-border-color: #3f3f55;
     -fx-border-radius: 6;
     -fx-background-radius: 6;
@@ -47,12 +47,27 @@
     -fx-font-size: 13px;
 }
 
-.textarea-field {
-    -fx-control-inner-background: #2b2b3d;
-    -fx-text-fill: #cccccc;
-    -fx-prompt-text-fill: #cccccc;
+.output-field {
+    -fx-background-color: #212137;
+    -fx-control-inner-background: #212137; /* dla TextArea */
+    -fx-text-fill: #e6f0ff;
+    -fx-prompt-text-fill: #aab6c8;
+    -fx-border-color: #4785ff;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-font-size: 14px;
+    -fx-font-family: "JetBrains Mono", "Consolas", "Menlo", "monospace";
+    -fx-padding: 12 16;
+    -fx-effect: dropshadow(gaussian, rgba(70,133,255,0.13), 6, 0, 0, 2);
+    -fx-opacity: 0.96;
+    -fx-cursor: text;
 }
 
+.textarea-field {
+    -fx-control-inner-background: #2b2b3d;
+    -fx-text-fill: #e6f0ff;
+    -fx-prompt-text-fill: #e6f0ff;
+}
 .radio-button {
     -fx-background-color: transparent;
     -fx-padding: 10 15;
@@ -77,15 +92,15 @@
 }
 
 .label {
-    -fx-text-fill: #cccccc;
+    -fx-text-fill: #e6f0ff;
     -fx-font-size: 13px;
 }
 .input-field{
-    -fx-text-fill: #cccccc;
+    -fx-text-fill: #e6f0ff;
     -fx-font-size: 13px;
 }
 
 .label-text{
-    -fx-text-fill: #cccccc;
+    -fx-text-fill: #e6f0ff;
     -fx-font-size: 13px;
 }
