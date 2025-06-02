@@ -1,6 +1,8 @@
 #ifndef GRAPH_H
 #define GRAPH_H
 
+#include <stdio.h>
+
 #define max(a,b) ((a) > (b) ? (a) : (b))
 #define min(a,b) ((a) < (b) ? (a) : (b))
 
@@ -42,11 +44,11 @@ int *createPartitionTab(int n);
 int **createBasicTestGraph(int n);
 
 //print
-void printPartitionsTab(int *partitions, int n, int k);
+void printPartitionsTab(int *partitions, int n, int k,FILE *file);
 void printConnections(int **matrix, int n);
 void printPartition(int **partition,int k,int partitionSize[]);
 void printOuterConnections(int *outerConnections,int k);
-void printPartitionsSizes(int partSize[],int k);
+void printPartitionsSizes(int partSize[],int k,FILE *file);
 
 //free
 void freeNieghbourMatrix(int **neighbourMatrix,int n);

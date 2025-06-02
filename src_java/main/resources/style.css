@@ -1,0 +1,106 @@
+.root-pane {
+    -fx-background-color: #1e1e2f;
+    -fx-padding: 20;
+    -fx-spacing: 10;
+}
+
+/* Buttons */
+.confirm-button, .file-button {
+    -fx-background-color: linear-gradient(to bottom, #58a6ff, #1f6feb);
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+    -fx-padding: 10 18;
+    -fx-background-radius: 10;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(one-pass-box, rgba(0,0,0,0.3), 4, 0, 0, 2);
+    -fx-border-color: transparent;
+    -fx-transition: all 0.3s ease;
+}
+
+.confirm-button:hover, .file-button:hover {
+    -fx-background-color: #388bfd;
+}
+
+.back-button {
+    -fx-background-color: linear-gradient(to bottom, #ff6b6b, #e63946);
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+    -fx-padding: 10 18;
+    -fx-background-radius: 10;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(one-pass-box, rgba(0,0,0,0.3), 4, 0, 0, 2);
+}
+
+.back-button:hover {
+    -fx-background-color: #d62828;
+}
+
+.input-field, .textarea-field {
+    -fx-background-color: #2b2b3d;
+    -fx-text-fill: #e6f0ff;
+    -fx-border-color: #3f3f55;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+    -fx-padding: 8;
+    -fx-font-size: 13px;
+}
+
+.output-field {
+    -fx-background-color: #212137;
+    -fx-control-inner-background: #212137; /* dla TextArea */
+    -fx-text-fill: #e6f0ff;
+    -fx-prompt-text-fill: #aab6c8;
+    -fx-border-color: #4785ff;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-font-size: 14px;
+    -fx-font-family: "JetBrains Mono", "Consolas", "Menlo", "monospace";
+    -fx-padding: 12 16;
+    -fx-effect: dropshadow(gaussian, rgba(70,133,255,0.13), 6, 0, 0, 2);
+    -fx-opacity: 0.96;
+    -fx-cursor: text;
+}
+
+.textarea-field {
+    -fx-control-inner-background: #2b2b3d;
+    -fx-text-fill: #e6f0ff;
+    -fx-prompt-text-fill: #e6f0ff;
+}
+.radio-button {
+    -fx-background-color: transparent;
+    -fx-padding: 10 15;
+    -fx-font-size: 13px;
+    -fx-text-fill: #bbbbbb;
+    -fx-background-radius: 8;
+    -fx-border-color: transparent;
+    -fx-cursor: hand;
+}
+
+.radio-button:selected {
+    -fx-background-color: #3a3a55;
+    -fx-text-fill: #aaccff;
+    -fx-border-color: #4e4e6a;
+    -fx-border-width: 1;
+    -fx-border-radius: 8;
+}
+
+.radio-button:hover {
+    -fx-background-color: #2c2c40;
+    -fx-text-fill: #e0e0e0;
+}
+
+.label {
+    -fx-text-fill: #e6f0ff;
+    -fx-font-size: 13px;
+}
+.input-field{
+    -fx-text-fill: #e6f0ff;
+    -fx-font-size: 13px;
+}
+
+.label-text{
+    -fx-text-fill: #e6f0ff;
+    -fx-font-size: 13px;
+}

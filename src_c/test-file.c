@@ -1,20 +1,69 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include <string.h>
 #include "graph.h"
 #include "input.h"
+#include "tests.h"
 
 int  main(int argc, char **argv)
 {
     int n=0;//nummber of verticies
     Node **neighbourList=NULL;
     int** neighbourMatrix=NULL;
-    if(argc<2)
+    if(argc<2)//options of tests
     {
-        printf("Algorithm is currently running on basic graph:\n 12 nodes, 3 columns and 4 rows,\nconnected: up, down, right, left\n");
-        n=12;
-        int** neighbourMatrix=createBasicTestGraph(n);
+        printf("Welcome to test file, choose your test:\n1 - Basic test 12 nodes, 3 columns and 4 rows,connected: up, down, right\n2 - Creates irregular graph with 12 nodes\n3 - Hybrid custom-random graph you need to choose number of nodes and connect probability\n");
+        int option=-1;
+        printf("Option: ");
+        scanf("%d",&option);
+        printf("\n");
+        switch(option)
+        {
+            case 1:
+                printf("You choosed option 1: basic test 12 nodes, 3 columns and 4 rows,connected: up, down, right\n");
+                n=12;
+                neighbourMatrix=createBasicTestGraph(n);
+                if (!neighbourMatrix) {
+                    perror("ERROR: neighbourMatrix==NULL");
+                    exit(EXIT_FAILURE);
+                }
+                break;
+            case 2:
+                printf("You choosed option 1: irregular graph with 12 nodes\n");
+                n=12;
+                neighbourMatrix=createIrregularTestGraph(n);
+                if (!neighbourMatrix) {
+                    perror("ERROR: neighbourMatrix==NULL");
+                    exit(EXIT_FAILURE);
+                }
+                break;
+            case 3:
+                printf("You choosed option 1: hybrid custom-random graph you need to choose number of nodes and connect probability\n");
+                printf("Please enter number of nodes and connection probability, (example 12 0.01)");
+                double connectionProbability=0;
+                scanf("%d %lf",&n,&connectionProbability);
+                if(connectionProbability>=1 || connectionProbability<=0)
+                {
+                    fprintf(stderr,"ERROR: Connction probability is probability, it needs to be with in (0,1) set: ");
+                    exit(1);
+                }
+                if(n<=0 || n>10000)
+                {
+                    fprintf(stderr,"ERROR: Number of nodes is a natural number it has to be in <1,10000> set");
+                    exit(1);
+                }
+                neighbourMatrix=createLargeTestGraph(n,connectionProbability);
+                if (!neighbourMatrix) {
+                    perror("ERROR: neighbourMatrix==NULL");
+                    exit(EXIT_FAILURE);
+                }
+                break;
+
+            default:
+                fprintf(stderr,"ERROR: You choosed a wrong option");
+                exit(1);
+        }
+        printf("N = %d\n",n);
         neighbourList=convertMatrixToList(neighbourMatrix,n);
         freeNieghbourMatrix(neighbourMatrix,n);
     }
@@ -48,16 +97,14 @@ int  main(int argc, char **argv)
         exit(1);
     }
     printf("\n");
-
-
     int firstPartSize = n / k; 
-
     int remainingNodes=n;
     long long average[2]={0,0};//0-index general average,1-index current average
     int pMin=0;//possible min
     int pMax=0;//possible max
     int* partSize=malloc(sizeof(int) * k);//table of partitions sizes
-     
+        
+
     int *partitionTab = createPartitionTab(n);//table in which vertex numbers are given a partition number
     int *vertexDegree = createVertexDegree(neighbourList,n);//how many connectins vertex has
 
@@ -92,22 +139,21 @@ int  main(int argc, char **argv)
         }
 
         //printf("DFS ended: partition %d, size = %d, sum = %lld\n", i, curPartSize, average[1]);
-
         //if (curPartSize > 0)
-          //printf("Average: %lld\n", average[1] / curPartSize);
+          //  printf("Average: %lld\n", average[1] / curPartSize);
     }
 
     //assigning remaining nodes
     assignRemainingNodes(neighbourList,partitionTab,partSize,n,k,precision);
 
-    printPartitionsSizes(partSize,k);
+    printPartitionsSizes(partSize,k,NULL);
 
     int **partition=createPartition(partitionTab,n,k,partSize);
     printPartition(partition,k,partSize);
 
     
-    int *outerConnections=createOuterConnections(neighbourList,partitionTab,partition,partSize,k,n);
-    printOuterConnections(outerConnections,k);
+    int *outerConnections=NULL;//createOuterConnections(neighbourList,partitionTab,partition,partSize,k,n);
+    //printOuterConnections(outerConnections,k);
 
     //printPartitionsTab(partitionTab, n, k);
 
