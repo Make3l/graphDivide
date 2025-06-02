@@ -1,23 +1,24 @@
 package org.graphgui;
 
 import javafx.application.Application;
-import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.scene.paint.Color;
 
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 
 
 public class HelloApplication extends Application {
+    private String outputFilePath="../results.txt";//path to file that stores results of division
     private Stage primaryStage;
     private File chosenFile;
     private InputMode currentMode;
@@ -28,6 +29,8 @@ public class HelloApplication extends Application {
     private ToggleGroup grupa1;
 
     private TextField nodesInput;
+
+    private TextArea divideResults;//stores results of division
 
     private TextArea connectionsInput;
 
@@ -54,7 +57,8 @@ public class HelloApplication extends Application {
         backButton = new Button("Back");
         backButton.getStyleClass().add("back-button");
 
-        dynamicContent = new VBox(15, buttonsPlacement); // to będzie kontener na zmieniające się opcje
+        // Main dynamic content container for switching modes
+        dynamicContent = new VBox(15, buttonsPlacement);
         dynamicContent.setPadding(new Insets(20));
         dynamicContent.getStyleClass().add("root-pane");
         dynamicContent.setFillWidth(true);
@@ -65,7 +69,7 @@ public class HelloApplication extends Application {
 
 
         backButton.setOnAction(e -> {
-            // Powrót do początkowego widoku z wyborem opcji
+            // Handle return to start menu
             dynamicContent.getChildren().clear();
             dynamicContent.getChildren().add(buttonsPlacement);
             primaryStage.sizeToScene();
@@ -85,7 +89,7 @@ public class HelloApplication extends Application {
         stage.show();
     }
 
-    private VBox initRadioButtons() {
+    private VBox initRadioButtons() {//Initializes basic GUI look
         fileButton = new RadioButton("File");
         testsButton = new RadioButton("Basic tests");
         enterManuallyButton = new RadioButton("Enter manually");
@@ -104,7 +108,7 @@ public class HelloApplication extends Application {
         return radioButtonsPlacement;
     }
 
-    private VBox initSharedInputs() {
+    private VBox initSharedInputs() {//Initializes input fields for number of partitions and precision
         Label partitionsLabel = new Label("Number of partitions:");
         partitionsInput = new TextField();
         partitionsInput.setPromptText("e.g. 3");
@@ -130,6 +134,7 @@ public class HelloApplication extends Application {
         return additionalInputs;
     }
 
+    // Initializes the file input section for .csrrg files
     private VBox initFileSection(Stage stage) {
         Button chooseFileButton = new Button("Choose .csrrg file");
         chooseFileButton.getStyleClass().add("file-button");
@@ -138,7 +143,7 @@ public class HelloApplication extends Application {
             FileChooser fileChooser = new FileChooser();
             FileChooser.ExtensionFilter csrrgFilter = new FileChooser.ExtensionFilter("CSRRG Files (*.csrrg)", "*.csrrg");
             fileChooser.getExtensionFilters().add(csrrgFilter);
-            chosenFile = fileChooser.showOpenDialog(stage);//wybrany plik .csrrg
+            chosenFile = fileChooser.showOpenDialog(stage);
         });
 
         VBox wrapper = new VBox(15,
@@ -150,18 +155,19 @@ public class HelloApplication extends Application {
         return wrapper;
     }
 
+    // Initializes the manual graph input section
     private VBox initManualInputSection() {
         Label nodes = new Label("Number of nodes");
-        TextField jfxNodesInput = new TextField();
-        jfxNodesInput.setPromptText("e.g. 12");
-        jfxNodesInput.addEventFilter(KeyEvent.KEY_TYPED, event -> {
+        TextField nodesInput = new TextField();
+        nodesInput.setPromptText("e.g. 12");
+        nodesInput.addEventFilter(KeyEvent.KEY_TYPED, event -> {
             if (!event.getCharacter().matches("\\d")) {
                 event.consume();
             }
         });
-        jfxNodesInput.getStyleClass().add("input-field");
-        nodesInput = jfxNodesInput;
-        VBox nodesLayout = new VBox(6, nodes, jfxNodesInput);
+        nodesInput.getStyleClass().add("input-field");
+        this.nodesInput = nodesInput;
+        VBox nodesLayout = new VBox(6, nodes, nodesInput);
         nodesLayout.setPadding(new Insets(15));
 
         Label connections = new Label("Graph connections (e.g. 1 2)");
@@ -185,16 +191,18 @@ public class HelloApplication extends Application {
 
         VBox wrapper = new VBox(15);
         wrapper.getChildren().addAll(
-                new Label("Do zmiany"),
+                // Placeholder label for future changes (to be updated)
+                new Label("To change"),
                 nodesLayout,
                 connctionsLayout,
-                additionalInputs, // recreate shared inputs dynamically
+                additionalInputs,
                 confirmBackButtonsPlacement
         );
         wrapper.setPadding(new Insets(20));
         return wrapper;
     }
 
+    // Initializes the section for selecting basic test graphs
     private VBox initTestSelectionLayout() {
         RadioButton test1 = new RadioButton("Basic test 12 nodes, 3 columns and 4 rows");
         RadioButton test2 = new RadioButton("Creates irregular graph with 12 nodes");
@@ -219,6 +227,7 @@ public class HelloApplication extends Application {
         return wrapper;
     }
 
+    // Creates the confirm and back buttons for detailed input sections
     private HBox createConfirmBackButtons() {
         detailedConfirmButton = new Button("Confirm");
         detailedConfirmButton.getStyleClass().add("confirm-button");
@@ -237,11 +246,11 @@ public class HelloApplication extends Application {
         return buttonBox;
     }
 
+    // Initializes the start menu with import options
     private VBox initStartMenu() {
         VBox radioButtonsPlacement = initRadioButtons();
         mainConfirmButton = new Button("Confirm");
         mainConfirmButton.getStyleClass().add("confirm-button");
-        //mainConfirmButton.setOnAction(e -> setupMainConfirmHandler());
         setupMainConfirmHandler();
 
         VBox buttonsPlacement = new VBox(15, radioButtonsPlacement, mainConfirmButton);
@@ -249,6 +258,7 @@ public class HelloApplication extends Application {
         return buttonsPlacement;
     }
 
+    // Handles dynamic content switching between modes
     private void setupMainConfirmHandler() {
         mainConfirmButton.setOnAction(e -> {
             Toggle selected = grupa1.getSelectedToggle();
@@ -273,6 +283,7 @@ public class HelloApplication extends Application {
         });
     }
 
+    // Processes confirmation button action and graph division logic
     private void setupDetailedConfirmHandler() {
         detailedConfirmButton.setOnAction(e -> {
             boolean valid = true;
@@ -302,10 +313,11 @@ public class HelloApplication extends Application {
                 System.out.println("Precision must be in (0, 1).");
             }
 
-            switch (currentMode) {
+            switch (currentMode) {//evokes adequate (to chosen option) partitioning function
                 case FILE -> {
                     if (chosenFile != null) {
                         System.out.println("Chosen file: " + chosenFile.getAbsolutePath());
+                        GraphLib.INSTANCE.fromFile(chosenFile.getAbsolutePath(),partitions,precision,outputFilePath);
                     } else {
                         valid = false;
                         System.out.println("No file selected.");
@@ -327,16 +339,33 @@ public class HelloApplication extends Application {
 
                     System.out.println("Number of vertices: " + nodesInput.getText());
                     System.out.println(connectionsInput.getText());
+                    String manualInputFile="data/custom-input.txt";
+                    try(FileWriter fileWriter=new FileWriter(manualInputFile)){
+                        fileWriter.write(nodesCount+"\n");
+                        fileWriter.write(connectionsInput.getText());
+                    }catch(IOException exception){
+                        System.out.println("Error occurred: "+exception.getMessage());
+                    }
+                    GraphLib.INSTANCE.fromUserInput(manualInputFile,partitions,precision,outputFilePath);
                 }
                 case TEST -> {
-                    System.out.println("Test selected"); // tutaj warto by potem obsłużyć konkretny wybór
+                    System.out.println("Test selected");
+                    GraphLib.INSTANCE.fromTests(currentMode.ordinal(),100,0.01,partitions,precision,outputFilePath);
                 }
             }
+            //Adds partition results to UI
+            divideResults=new TextArea();
+            divideResults.setEditable(false);
+            divideResults.setText(FileUtils.fileToString(outputFilePath));
+            divideResults.getStyleClass().add("output-field");
+            dynamicContent.getChildren().add(divideResults);
+            primaryStage.sizeToScene();
         });
     }
 
 
     public static void main(String[] args) {
+        System.setProperty("jna.library.path", "lib");
         launch(args);
     }
 }
