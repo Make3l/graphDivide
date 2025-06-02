@@ -127,7 +127,7 @@ void fromTests(int option, int n, double connectionProbability, int k, double pr
 
 
 
-void fromUserInput(char *inputFile, double connectionProbability, int k, double precision, char *outputFilePath)
+void fromUserInput(char *inputFile, int k, double precision, char *outputFilePath)
 {
     FILE *file=fopen(outputFilePath,"w");//output file to communicate with ui
     Node **neighbourList = NULL;
