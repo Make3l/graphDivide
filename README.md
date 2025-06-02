@@ -1,137 +1,145 @@
-# Graph Partitioning Tool
+# graphDivide
 
-Program dzieli zadany graf na *k* części przy zadanym marginesie procentowym. Celem jest minimalizacja liczby przeciętych krawędzi oraz zachowanie równowagi liczby wierzchołków w każdej części (z dokładnością do podanego marginesu procentowego).
-
-Domyślnie, jeśli użytkownik nie poda parametrów, graf dzielony jest na 2 partycje z marginesem 10%.
-
----
-
-## 📁 Struktura projektu
-
-```
-.
-├── graph.c / graph.h       # Funkcje do operacji na grafie i partycjonowania
-├── input.c / input.h       # Obsługa wczytywania grafów (m.in. CSR)
-├── main.c                  # Tryb podstawowego działania programu
-├── test-file.c             # Tryb interaktywnych testów
-├── Makefile                # Kompilacja programu (z opcjami: test, main)
-├── graf.csrrg              # Przykładowy graf (18 wierzchołków)
-├── graf3.csrrg             # Przykładowy graf (2054 wierzchołków)
-├── graf6.csrrg             # Przykładowy graf (50 wierzchołków)
-```
+A cross-platform tool for dividing a graph into *k* balanced partitions while minimizing cut edges.  
+The project provides both a fast native C implementation and a user-friendly JavaFX graphical interface.  
+You can run the algorithm from the command line (console app) or use the modern GUI for an easier experience.
 
 ---
 
-## ⚙️ Kompilacja
+## 📚 Table of Contents
 
-Można skompilować dwa warianty programu:
+- [📦 Project Structure](#-project-structure)
+- [⚙️ Compilation & Running](#-compilation--running)
+- [🖥️ Using the GUI](#️-using-the-gui)
+- [📥 Input Data](#-input-data)
+- [📤 Example Output](#-example-output)
+- [🚦 Algorithm Overview](#-algorithm-overview)
+- [📄 License](#-license)
+- [👥 Author](#-author)
+
+## 🎯 Project Goal
+
+The main objective of this program is to partition a given graph into *k* parts with a specified precision (allowed imbalance). The algorithm aims to **minimize the number of cut edges** between partitions and maintain **balance in the number of vertices** per partition (with user-defined tolerance).
+
+---
+
+## 📦 Project Structure
+
+```
+graphDivide/
+├── data/         # Example .csrrg graph files for testing
+├── lib/          # Native libraries for Java JNA interface (.so/.dylib/.dll)
+├── media/        # Gifs and screenshots used in the README
+├── src_c/        # C source code (algorithm, Makefile)
+├── src_java/     # JavaFX GUI (Maven project)
+├── results.txt   # Output file for results
+├── README.md
+└── .gitignore
+```
+
+---
+
+## ⚙️ Compilation & Running
+
+### 🟦 Building the Native C Application (No GUI)
+
+Go to the `src_c` folder and run:
+```bash
+make test        # Builds the interactive test app (test.out)
+make main-run    # Builds the standard app (main-run.out)
+```
+
+#### Running without GUI:
+
+- **Interactive mode:**
+    ```bash
+    ./test.out
+    ```
+    - Shows menu for built-in test graphs and lets you set partition count and precision.
+- **Standard mode:**
+    ```bash
+    ./main-run.out              # Runs default built-in test
+    ./main-run.out -c data/yourgraph.csrrg   # Loads graph from file
+    ```
+
+Both modes will prompt for partition count `k` and precision (allowed imbalance, e.g., `0.2` for 20%).
+
+### 🟩 Building the Native Library for GUI
+
+Still in `src_c`, build for your platform:
+
+- **macOS:**  
+  `make mac`
+- **Linux:**  
+  `make linux`
+- **Windows (MinGW):**  
+  `make windows`
+
+This will produce:
+- `libgraphlib.dylib` (macOS)
+- `libgraphlib.so` (Linux)
+- `libgraphlib.dll` (Windows)
+in the `lib/` folder.
+
+---
+
+## 🖥️ Using the GUI
+
+### 🟨 Building & Running the GUI
+
+The GUI uses Java 17+ and Maven.  
+Go to `src_java` and run:
 
 ```bash
-make test       # Buduje wersję testową (interaktywne opcje testów)
-make main-run       # Buduje wersję główną z domyślnym testem lub wejściem z pliku
+mvn clean javafx:run
 ```
+
+Features:
+- Load graphs from `.csrrg` files,
+- Enter graphs manually,
+- Use built-in test graphs,
+- Set partition parameters,
+- Run partitioning algorithm (calls C library via JNA),
+- View results in a styled window.
+
+**Note:**  
+- The correct native library for your OS must be in `lib/` (see previous section).
+- The GUI can be run independently of the console version.
+
+### 🧭 Interface Overview
+
+The GUI provides an intuitive way to load input data and run the algorithm in three different modes:
+
+- **File**: Select a `.csrrg` file with your graph data.
+- **Basic tests**: Use predefined test graphs for quick demonstration.
+- **Enter manually**: Input vertex count and edges via text box.
+
+Below are example workflows from the GUI:
+
+- File input:  
+  ![](media/gif-file.gif)
+
+
+- Built-in test graphs:  
+  ![](media/gif-testy.gif)
+
+  
+- Manual input:  
+  ![](media/gif-manualnie.gif)
 
 ---
 
-## ▶️ Uruchamianie
+## 📥 Input Data
 
-### 1. Wersja testowa:
+Graphs are provided in `.csrrg` (Compressed Sparse Row) format, with examples in the `data/` folder:
 
-```bash
-./test.out
-```
-
-Pojawi się menu:
-
-```
-Welcome to test file, choose your test:
-1 - Basic test 12 nodes, 3 columns and 4 rows, connected: up, down, right
-2 - Creates irregular graph with 12 nodes
-3 - Hybrid custom-random graph – choose number of nodes and connection probability
-```
-
-Następnie użytkownik podaje:
-- liczbę partycji (`k`), np. 4,
-- maksymalną dopuszczalną różnicę rozmiarów partycji jako wartość z przedziału (0, 1), np. `0.2` (czyli 20%).
-
-### 2. Wersja główna:
-
-```bash
-./main-run.out          # Domyślnie uruchamia podstawowy test (12 wierzchołków)
-./main-run.out -c graf.csrrg   # Wczytuje graf z pliku w formacie .csrrg
-```
-
-W obu przypadkach użytkownik proszony jest o podanie:
-- liczby partycji `k`,
-- dopuszczalnej różnicy rozmiarów partycji (precyzji).
+- `graf.csrrg` (18 nodes)
+- `graf6.csrrg` (50 nodes)
+- `graf3.csrrg` (2054 nodes)
 
 ---
 
-## 🧠 Opis algorytmu
-
-Algorytm opiera się na iteracyjnym podziale grafu metodą rozrostu partycji w oparciu o heurystykę DFS (Depth-First Search). Każda partycja rozrasta się z wybranego wierzchołka startowego, dodając kolejnych sąsiadów do momentu osiągnięcia limitu narzuconego przez `k` oraz margines błędu (`precision`).
-
-### 🔸 Wybór wierzchołka startowego
-
-Dla każdej nowej partycji wybierany jest wierzchołek o najwyższym **score**, obliczanym wg wzoru:
-
-```
-score = w1 * degUn + w2 * dens
-```
-
-Gdzie:
-- `degUn` – liczba nieprzydzielonych sąsiadów wierzchołka,
-- `dens` – liczba połączeń między tymi sąsiadami (czyli lokalna spójność),
-- `w1` i `w2` to wagi (np. `w1 = 10`, `w2 = 1`).
-
-Wierzchołki o `degUn <= 1` są pomijane jako źródła — są zbyt słabe do rozrostu.
-
-### 🔸 Rozrost partycji (DFS)
-
-Po wybraniu źródła, algorytm kontynuuje rozrost partycji przez dodawanie nieprzydzielonych sąsiadów o największym **score**. DFS jest ograniczony przez:
-- docelowy rozmiar partycji wyliczony z `n / k`,
-- oraz dozwolony margines błędu (precision) – np. przy `precision = 0.2` różnica między największą a najmniejszą partycją nie może przekroczyć 20%.
-
-### 🔸 Heurystyka wyboru sąsiada
-
-Podczas rozrostu partycji algorytm ocenia kandydatów do dodania na podstawie trzech czynników:
-
-1. **Liczby połączeń wewnątrz aktualnej partycji** (*inner connections*),
-2. **Liczby połączeń na zewnątrz partycji** (*outer connections*),
-3. **Stopnia całkowitego wierzchołka** (czyli ile ma wszystkich sąsiadów).
-
-Funkcja przypisuje punkty każdemu kandydatowi na podstawie wzoru:
-
-```
-score = w1 * innerConnections - w2 * outerConnections - w3 * degree + bonus
-```
-
-Gdzie:
-- `w1`, `w2`, `w3` to odpowiednio: 2, 5, 1,
-- `bonus = +300` jeśli sąsiad kończy „tunel” (ma tylko jedno połączenie i partycja osiągnęła minimalny rozmiar),
-- `-50` jeśli tunelowy sąsiad jest przedwcześnie spotkany (partycja jeszcze zbyt mała),
-- `+100` to przesunięcie w celu utrzymania dodatniego wyniku.
-
-Dzięki temu:
-- Preferowani są wierzchołki, które **utrzymują spójność partycji**,
-- Unika się zbyt szybkiego zamykania partii przez dodawanie „tunelowych” końców,
-- Rozrost minimalizuje wycieki na zewnątrz partycji.
-
-Ta heurystyka jest bardziej zaawansowana niż prosta ocena `degUn + dens` i pozwala na **precyzyjne i kontrolowane budowanie partycji**.
-
----
-
-## 📥 Dane wejściowe
-
-Program przyjmuje grafy w formacie `.csrrg` (CSR – compressed sparse row). W repozytorium znajdują się trzy przykładowe pliki:
-
-- `graf.csrrg` – 18 wierzchołków
-- `graf6.csrrg` – 50 wierzchołków
-- `graf3.csrrg` – 2054 wierzchołków
-
----
-
-## 📤 Przykładowe wyjście programu
+## 📤 Example Output
 
 ```
 Partition sizes:
@@ -155,20 +163,60 @@ Partition 3 <-> 9
 
 ---
 
-## 🔧 Wymagania
 
-Brak specjalnych zależności. Do kompilacji potrzebny jest:
-- Kompilator C (np. `gcc`)
-- System zgodny z POSIX (Linux, macOS)
+## 🚦 Algorithm Overview
+
+The core of the algorithm is based on iterative graph partitioning using a growth heuristic (Depth-First Search).  
+Each partition expands from a chosen source node, adding neighboring nodes until the target size (n/k, with given precision) is reached.
+
+### 🔹 Source Node Selection
+
+For each new partition, the algorithm selects a source node with the highest **score**:
+
+```
+score = w1 * degUn + w2 * dens
+```
+
+Where:
+- `degUn` = number of unassigned neighbors,
+- `dens` = number of edges among those neighbors (local density),
+- `w1` and `w2` are weights (e.g., `w1=10`, `w2=1`).
+
+Nodes with `degUn <= 1` are skipped as too weak for starting a partition.
+
+### 🔹 Partition Growth (DFS)
+
+After selecting a source, the algorithm grows the partition by adding unassigned neighbors with the highest score, until the partition size and precision constraints are satisfied.
+
+### 🔹 Neighbor Scoring Heuristic
+
+When adding candidates, the following formula is used:
+
+```
+score = w1 * innerConnections - w2 * outerConnections - w3 * degree + bonus
+```
+
+Where:
+- `innerConnections`: edges inside the current partition,
+- `outerConnections`: edges to nodes outside the partition,
+- `degree`: total degree,
+- weights `w1=2`, `w2=5`, `w3=1`,
+- `bonus = +300` if adding a "tunnel" node (only one connection, partition at minimum size), `-50` if encountered too early,
+- `+100` to shift scores positive.
+
+This heuristic:
+- Prefers nodes that improve partition cohesion,
+- Avoids closing tunnels too soon,
+- Helps balance partition growth and limits edge cuts.
 
 ---
 
-## 👥 Autor
+## 📄 License
 
-- Michał Muszyński
+MIT License.  
+See [LICENSE](LICENSE) for details.
 
 ---
 
-## 📄 Licencja
-
-Projekt edukacyjny – bez określonej licencji. Możesz korzystać, modyfikować i udostępniać z oznaczeniem źródła.
+## 👥 Author
+Michał Muszyński

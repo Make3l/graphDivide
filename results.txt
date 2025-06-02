@@ -1,0 +1,13 @@
+Partition sizes:
+Partition 0 size = 6
+Partition 1 size = 7
+Partition 2 size = 7
+Partition 3 size = 7
+Partition 4 size = 5
+
+== Divide on 5 parts ==
+Partition 0: 3 6 11 17 20 21 
+Partition 1: 8 9 12 13 18 27 31 
+Partition 2: 2 10 15 25 26 28 30 
+Partition 3: 0 1 4 5 16 22 23 
+Partition 4: 7 14 19 24 29 
